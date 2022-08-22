@@ -3,9 +3,9 @@ class ApplicationController < ActionController::API
     restaurant = Restaurant.sample
 
     if restaurant
-      render :json => {name: restaurant.name}
+      render json: { name: restaurant.name }
     else
-      render :json => nil, :status => :not_found
+      render json: nil, status: :not_found
     end
   end
 end

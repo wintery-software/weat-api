@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Restaurant, type: :model do
+describe Restaurant, type: :model do
   describe '.sample' do
     it 'returns either one from whatever created' do
       restaurants = Array.new(3) do |index|

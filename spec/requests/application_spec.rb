@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe 'Applications', type: :request do
+describe 'Applications', type: :request do
   describe 'GET /lucky' do
     it 'gets a random restaurant on success' do
       Restaurant.create(name: '不二家酸菜鱼')
