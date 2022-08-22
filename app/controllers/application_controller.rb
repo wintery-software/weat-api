@@ -5,7 +5,7 @@ class ApplicationController < ActionController::API
     if restaurant
       render :json => {name: restaurant.name}
     else
-      render :json => nil
+      render :json => nil, :status => :not_found
     end
   end
 end
