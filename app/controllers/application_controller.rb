@@ -1,7 +1,11 @@
 class ApplicationController < ActionController::API
   def lucky
-    picked = Restaurant.order('RANDOM()').first
+    restaurant = Restaurant.sample
 
-    render :json => picked.name
+    if restaurant
+      render :json => {name: restaurant.name}
+    else
+      render :json => nil
+    end
   end
 end
