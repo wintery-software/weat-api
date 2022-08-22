@@ -5,3 +5,9 @@
 #
 #   movies = Movie.create([{ name: "Star Wars" }, { name: "Lord of the Rings" }])
 #   Character.create(name: "Luke", movie: movies.first)
+
+require 'csv'
+
+Restaurant.delete_all
+restaurants = CSV.read('data/restaurants.csv', headers: true).map(&:to_h)
+Restaurant.create(restaurants)
