@@ -9,5 +9,5 @@
 require 'csv'
 
 Restaurant.delete_all
-restaurants = CSV.read('data/restaurants.csv', headers: true).map(&:to_h)
+restaurants = CSV.read('db/data/restaurants.csv', headers: true).map(&:to_h)
 Restaurant.create(restaurants)
