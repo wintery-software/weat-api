@@ -13,11 +13,19 @@ Weat API Service
 2. Install dependencies
 
    ```shell
-   pip install -r requirements.txt
+   bundle install
    ```
 
-3. Start server
+3. Prepare database
 
    ```shell
-   flask run
+   rails db:create
+   rails db:migrate
+   rails db:seed
+   ```
+
+4. Start server
+
+   ```shell
+   rails server
    ```
