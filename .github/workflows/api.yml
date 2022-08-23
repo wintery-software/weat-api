@@ -23,6 +23,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -31,10 +34,6 @@ jobs:
         with:
           bundler-cache: true
       - name: Setup database
-        env:
-          RAILS_ENV: test
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
         run: bundle exec rails db:setup
       - name: Run tests
         run: bundle exec rspec
