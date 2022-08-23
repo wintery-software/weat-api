@@ -15,7 +15,7 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: ''
+          POSTGRES_PASSWORD: postgres
         ports:
           - '5432:5432'
         options: >-
@@ -32,7 +32,9 @@ jobs:
           bundler-cache: true
       - name: Setup database
         env:
+          RAILS_ENV: test
           POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
         run: bundle exec rails db:setup
       - name: Run tests
         run: bundle exec rspec
