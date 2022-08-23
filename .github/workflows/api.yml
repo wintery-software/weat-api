@@ -15,9 +15,14 @@ jobs:
         image: postgres:latest
         env:
           POSTGRES_USER: postgres
-          POSTGRES_DB: weat_api_test
-          POSTGRES_PASSWORD: ""
-        ports: [ "5432:5432" ]
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - "5432:5432"
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -26,8 +31,9 @@ jobs:
         with:
           bundler-cache: true
       - name: Setup database
-        run: |
-          bundle exec rails db:create
-          bundle exec rails db:schema:load
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        run: bundle exec rails db:setup
       - name: Run tests
         run: bundle exec rspec
