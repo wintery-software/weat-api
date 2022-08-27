@@ -5,8 +5,9 @@ on:
       - main
       - dev
   pull_request:
-    branches:
-      - '*'
+    types:
+      - opened
+      - reopened
 jobs:
   build:
     runs-on: ubuntu-latest
