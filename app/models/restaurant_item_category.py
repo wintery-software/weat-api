@@ -1,0 +1,33 @@
+from typing import List
+import uuid
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from app.models.base import BaseModel, Translation
+
+
+class RestaurantItemCategoryTranslation(Translation):
+    __tablename__ = "restaurant_item_categories_translations"
+
+    _fields: List[str] = ["name"]
+
+    parent_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("restaurant_item_categories.id")
+    )
+    name: Mapped[str] = mapped_column()
+
+
+class RestaurantItemCategory(BaseModel):
+    __tablename__ = "restaurant_item_categories"
+
+    _fields: List[str] = ["name"]
+
+    restaurant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("restaurants.id"))
+
+    name: Mapped[str] = mapped_column()
+
+    restaurant: Mapped["Restaurant"] = relationship()
+    items: Mapped[List["RestaurantItem"]] = relationship()
+
+    translations: Mapped[List[RestaurantItemCategoryTranslation]] = relationship()
+    TranslationClass = RestaurantItemCategoryTranslation

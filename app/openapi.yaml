@@ -1,0 +1,242 @@
+openapi: "3.0.0"
+
+info:
+  title: Weat API
+  version: "1.0"
+
+tags:
+  - name: Health
+  - name: Restaurants
+
+paths:
+  /health:
+    get:
+      summary: Health check
+      description: Returns the health status of the application.
+      operationId: app.routes.health
+      tags:
+        - Health
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "OK"
+      security: []
+  /restaurants:
+    get:
+      summary: List all restaurants
+      description: Returns a list of all restaurants.
+      operationId: app.routes.list_restaurants
+      tags:
+        - Restaurants
+      parameters:
+        - $ref: "#/components/parameters/Locale"
+      responses:
+        "200":
+          description: List of restaurants
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Restaurant"
+      security: []
+    post:
+      summary: Create a restaurant
+      description: Creates a new restaurant.
+      operationId: app.routes.create_restaurant
+      tags:
+        - Restaurants
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantForm"
+      responses:
+        "201":
+          description: Restaurant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+      security: []
+  /restaurants/{restaurant_id}:
+    get:
+      summary: Get a restaurant
+      description: Returns a restaurant by ID.
+      operationId: app.routes.get_restaurant
+      tags:
+        - Restaurants
+      parameters:
+        - $ref: "#/components/parameters/RestaurantId"
+        - $ref: "#/components/parameters/Locale"
+      responses:
+        "200":
+          description: Restaurant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+        "404":
+          description: Restaurant not found
+      security: []
+    put:
+      summary: Update a restaurant
+      description: Updates a restaurant by ID.
+      operationId: app.routes.update_restaurant
+      tags:
+        - Restaurants
+      parameters:
+        - $ref: "#/components/parameters/RestaurantId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantForm"
+      responses:
+        "200":
+          description: Restaurant updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Restaurant"
+        "404":
+          description: Restaurant not found
+      security: []
+    delete:
+      summary: Delete a restaurant
+      description: Deletes a restaurant by ID.
+      operationId: app.routes.delete_restaurant
+      tags:
+        - Restaurants
+      parameters:
+        - $ref: "#/components/parameters/RestaurantId"
+      responses:
+        "204":
+          description: Restaurant deleted
+      security: []
+
+components:
+  parameters:
+    Locale:
+      name: locale
+      in: query
+      description: The selected locale for display
+      required: false
+      schema:
+        type: string
+        example: en
+        default: en
+    RestaurantId:
+      name: restaurant_id
+      in: path
+      description: The ID of the restaurant
+      required: true
+      schema:
+        type: string
+        format: uuid
+  schemas:
+    Restaurant:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          minLength: 1
+        address:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        images:
+          type: array
+          items:
+            type: string
+        google_place_id:
+          type: string
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/RestaurantCategory"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RestaurantItem"
+        item_categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/RestaurantItemCategory"
+    RestaurantCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+    RestaurantItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        category:
+          $ref: "#/components/schemas/RestaurantItemCategory"
+        price:
+          type: number
+          minimum: 0
+        image:
+          type: string
+    RestaurantItemCategory:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+    RestaurantForm:
+      type: object
+      properties:
+        i18n:
+          type: object
+          properties:
+            en:
+              $ref: "#/components/schemas/RestaurantLocalizable"
+            zh:
+              $ref: "#/components/schemas/RestaurantLocalizable"
+        address:
+          type: string
+        price:
+          type: integer
+          minimum: 0
+        rating:
+          type: number
+          minimum: 0
+          maximum: 5
+        images:
+          type: array
+          items:
+            type: string
+        google_place_id:
+          type: string
+    RestaurantLocalizable:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
