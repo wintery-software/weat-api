@@ -7,8 +7,12 @@ info:
 tags:
   - name: Health
   - name: Restaurants
+  - name: Restaurant Categories
+  - name: Restaurant Items
+  - name: Restaurant Item Categories
 
 paths:
+  ########## Health ##########
   /health:
     get:
       summary: Health check
@@ -25,6 +29,8 @@ paths:
                 type: string
                 example: "OK"
       security: []
+
+  ########## Restaurants ##########
   /restaurants:
     get:
       summary: List all restaurants
@@ -120,13 +126,69 @@ paths:
         "204":
           description: Restaurant deleted
       security: []
+
+  ########## Restaurant Categories ##########
+  /restaurants/categories:
+    get:
+      summary: List all restaurant categories
+      description: Returns a list of all restaurant categories.
+      operationId: app.routes.list_restaurant_categories
+      tags:
+        - Restaurant Categories
+      parameters:
+        - $ref: "#/components/parameters/Locale"
+      responses:
+        "200":
+          description: List of restaurant categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RestaurantCategory"
+      security: []
+    post:
+      summary: Create a restaurant category
+      description: Creates a new restaurant category.
+      operationId: app.routes.create_restaurant_category
+      tags:
+        - Restaurant Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantCategoryForm"
+      responses:
+        "201":
+          description: Restaurant category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantCategory"
+      security: []
+  /restaurants/categories/{category_id}:
+    delete:
+      summary: Delete a restaurant category
+      description: Deletes a restaurant category by ID.
+      operationId: app.routes.delete_restaurant_category
+      tags:
+        - Restaurant Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantCategoryId"
+      responses:
+        "204":
+          description: Restaurant category deleted
+      security: []
+
+  ########## Restaurant Items ##########
   /restaurants/{restaurant_id}/items:
     get:
       summary: List all restaurant items
       description: Returns a list of all restaurant items.
       operationId: app.routes.list_restaurant_items
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
         - $ref: "#/components/parameters/Locale"
@@ -145,7 +207,7 @@ paths:
       description: Creates new restaurant item.
       operationId: app.routes.create_restaurant_items
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
       requestBody:
@@ -169,7 +231,7 @@ paths:
       description: Deletes all/selected restaurant items. If no item IDs are provided, all items will be deleted.
       operationId: app.routes.delete_restaurant_items
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
       responses:
@@ -182,7 +244,7 @@ paths:
       description: Returns a restaurant item by ID.
       operationId: app.routes.get_restaurant_item
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
         - $ref: "#/components/parameters/RestaurantItemId"
@@ -202,7 +264,7 @@ paths:
       description: Updates a restaurant item by ID.
       operationId: app.routes.update_restaurant_item
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
         - $ref: "#/components/parameters/RestaurantItemId"
@@ -227,7 +289,7 @@ paths:
       description: Deletes a restaurant item by ID.
       operationId: app.routes.delete_restaurant_item
       tags:
-        - Restaurants
+        - Restaurant Items
       parameters:
         - $ref: "#/components/parameters/RestaurantId"
         - $ref: "#/components/parameters/RestaurantItemId"
@@ -235,28 +297,64 @@ paths:
         "204":
           description: Restaurant item deleted
       security: []
-  /restaurants/categories:
+
+  ########## Restaurant Item Categories ##########
+  /restaurants/{restaurant_id}/items/categories:
     get:
-      summary: List all restaurant categories
-      description: Returns a list of all restaurant categories.
-      operationId: app.routes.list_restaurant_categories
+      summary: List all restaurant item categories
+      description: Returns a list of all restaurant item categories.
+      operationId: app.routes.list_restaurant_item_categories
       tags:
-        - Restaurants
+        - Restaurant Item Categories
       parameters:
         - $ref: "#/components/parameters/Locale"
       responses:
         "200":
-          description: List of restaurant categories
+          description: List of restaurant item categories
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "#/components/schemas/RestaurantCategory"
+                  $ref: "#/components/schemas/RestaurantItemCategory"
+      security: []
+    post:
+      summary: Create a restaurant item category
+      description: Creates a new restaurant item category.
+      operationId: app.routes.create_restaurant_item_category
+      tags:
+        - Restaurant Item Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantItemCategoryForm"
+      responses:
+        "201":
+          description: Restaurant item category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantItemCategory"
+      security: []
+  /restaurants/{restaurant_id}/items/categories/{category_id}:
+    delete:
+      summary: Delete a restaurant item category
+      description: Deletes a restaurant item category by ID.
+      operationId: app.routes.delete_restaurant_item_category
+      tags:
+        - Restaurant Item Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantItemCategoryId"
+      responses:
+        "204":
+          description: Restaurant item category deleted
       security: []
 
 components:
   parameters:
+    ########## Locale ##########
     Locale:
       name: locale
       in: query
@@ -266,11 +364,21 @@ components:
         type: string
         example: en
         default: en
+
+    ########## IDs ##########
     RestaurantId:
       name: restaurant_id
       in: path
       description: The ID of the restaurant
       required: true
+      schema:
+        type: string
+        format: uuid
+    RestaurantCategoryId:
+      name: category_id
+      in: query
+      description: The ID of the restaurant category
+      required: false
       schema:
         type: string
         format: uuid
@@ -282,7 +390,17 @@ components:
       schema:
         type: string
         format: uuid
+    RestaurantItemCategoryId:
+      name: category_id
+      in: path
+      description: The ID of the restaurant item category
+      required: true
+      schema:
+        type: string
+        format: uuid
+
   schemas:
+    ########## Models ##########
     Restaurant:
       type: object
       properties:
@@ -312,14 +430,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/RestaurantCategory"
-        items:
-          type: array
-          items:
-            $ref: "#/components/schemas/RestaurantItem"
-        item_categories:
-          type: array
-          items:
-            $ref: "#/components/schemas/RestaurantItemCategory"
     RestaurantCategory:
       type: object
       properties:
@@ -348,20 +458,8 @@ components:
     RestaurantItemCategory:
       type: string
       minLength: 1
-    RestaurantTranslation:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-    RestaurantItemTranslation:
-      type: object
-      properties:
-        name:
-          type: string
-          minLength: 1
-        description:
-          type: string
+
+    ########## Forms ##########
     RestaurantForm:
       type: object
       properties:
@@ -383,10 +481,11 @@ components:
             type: string
         google_place_id:
           type: string
-        categories:
+        category_ids:
           type: array
           items:
-            $ref: "#/components/schemas/RestaurantCategory"
+            type: string
+            format: uuid
         translations:
           type: object
           properties:
@@ -394,6 +493,19 @@ components:
               $ref: "#/components/schemas/RestaurantTranslation"
             zh-TW:
               $ref: "#/components/schemas/RestaurantTranslation"
+    RestaurantCategoryForm:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        translations:
+          type: object
+          properties:
+            zh-CN:
+              $ref: "#/components/schemas/RestaurantCategoryTranslation"
+            zh-TW:
+              $ref: "#/components/schemas/RestaurantCategoryTranslation"
     RestaurantItemForm:
       type: object
       properties:
@@ -416,3 +528,44 @@ components:
               $ref: "#/components/schemas/RestaurantItemTranslation"
             zh-TW:
               $ref: "#/components/schemas/RestaurantItemTranslation"
+    RestaurantItemCategoryForm:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        translations:
+          type: object
+          properties:
+            zh-CN:
+              $ref: "#/components/schemas/RestaurantItemCategoryTranslation"
+            zh-TW:
+              $ref: "#/components/schemas/RestaurantItemCategoryTranslation"
+
+    ########## Translations ##########
+    RestaurantTranslation:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+    RestaurantCategoryTranslation:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+    RestaurantItemTranslation:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+        description:
+          type: string
+    RestaurantItemCategoryTranslation:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1

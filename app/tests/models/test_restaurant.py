@@ -84,8 +84,6 @@ def test_to_dict():
     assert result["images"] == images
     assert result["google_place_id"] == google_place_id
     assert result["categories"] == []
-    assert result["items"] == []
-    assert result["item_categories"] == []
 
 
 def test_to_dict_with_locale():
@@ -118,16 +116,22 @@ def test_to_dict_with_locale():
     assert result["images"] == images
     assert result["google_place_id"] == google_place_id
     assert result["categories"] == []
-    assert result["items"] == []
-    assert result["item_categories"] == []
 
 
 def test_create_with_categories():
-    categories = [{"name": "category1"}, {"name": "category2"}]
-    obj = Restaurant.create(name="Test Restaurant", categories=categories)
+    category = RestaurantCategory.create(name="category_1")
+    obj = Restaurant.create(name="Test Restaurant", category_ids=[category.id])
 
     assert obj.id is not None
-    assert obj.to_dict()["categories"] == categories
+    assert obj.to_dict()["categories"] == [category.to_dict()]
+
+
+def test_create_with_non_existent_categories():
+    try:
+        Restaurant.create(name="Test Restaurant", category_ids=["non_existent_id"])
+        fail("Should have raised an exception if category does not exist")
+    except Exception as e:
+        pass
 
 
 def test_update_with_categories():
@@ -135,15 +139,15 @@ def test_update_with_categories():
 
     assert obj.to_dict()["categories"] == []
 
-    categories = [{"name": "category1"}, {"name": "category2"}]
-    obj.update(categories=categories)
+    category_1 = RestaurantCategory.create(name="category_1")
+    obj.update(category_ids=[category_1.id])
 
-    assert obj.to_dict()["categories"] == categories
+    assert obj.to_dict()["categories"] == [category_1.to_dict()]
 
-    categories = [{"name": "category3"}, {"name": "category4"}]
-    obj.update(categories=categories)
+    category_2 = RestaurantCategory.create(name="category_2")
+    obj.update(category_ids=[category_1.id, category_2.id])
 
-    assert obj.to_dict()["categories"] == categories
+    assert obj.to_dict()["categories"] == [category_1.to_dict(), category_2.to_dict()]
 
 
 def test_create_with_translations():
@@ -180,7 +184,8 @@ def test_delete():
 
 
 def test_delete_with_categories():
-    obj = Restaurant.create(name="Test Restaurant", categories=[{"name": "category1"}])
+    category = RestaurantCategory.create(name="category_1")
+    obj = Restaurant.create(name="Test Restaurant", category_ids=[category.id])
 
     assert Restaurant.get(id=obj.id) is not None
     assert len(RestaurantCategory.list()) == 1

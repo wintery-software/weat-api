@@ -33,8 +33,6 @@ class Restaurant(TranslatableModel):
         "images",
         "google_place_id",
         "categories",
-        "items",
-        "item_categories",
     ]
 
     name: Mapped[str] = mapped_column()
@@ -66,27 +64,22 @@ class Restaurant(TranslatableModel):
 
     @classmethod
     def create(cls, **params):
-        categories = params.pop("categories", [])
+        category_ids = params.pop("category_ids", [])
 
         obj = super().create(**params)
-        obj.update_categories(categories)
+
+        for category_id in category_ids:
+            category = RestaurantCategory.get(id=category_id)
+            obj.categories.append(category)
 
         return obj
 
     def update(self, **params):
-        categories = params.pop("categories", [])
-        self.update_categories(categories)
+        category_ids = params.pop("category_ids", [])
+
+        self.categories.clear()
+        for category_id in category_ids:
+            category = RestaurantCategory.get(id=category_id)
+            self.categories.append(category)
 
         super().update(**params)
-
-    def add_category(self, **params):
-        from app.models.restaurant_category import RestaurantCategory
-
-        category, _ = RestaurantCategory.get_or_create(**params)
-        self.categories.append(category)
-
-    def update_categories(self, categories):
-        self.categories.clear()
-
-        for category_dict in categories:
-            self.add_category(**category_dict)
