@@ -27,13 +27,13 @@ class RestaurantForm(BaseForm):
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
-    address: Optional[str] = ""
+    address: Optional[str] = None
     price: Optional[Annotated[int, Field(strict=True, ge=0)]] = 0
     rating: Optional[Annotated[float, Field(strict=True, ge=0.0, le=5.0)]] = 0.0
     images: List[str] = []
 
     category_ids: List[str] = []
-    google_place_id: Optional[str] = ""
+    google_place_id: Optional[str] = None
 
     translations: Optional[Dict[str, RestaurantTranslation]] = {}
 
@@ -43,15 +43,23 @@ class RestaurantItemForm(BaseForm):
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
-    description: Optional[str] = ""
-    category: Optional[str] = ""
+    description: Optional[str] = None
+    category_id: Optional[str] = None
     price: Annotated[float, Field(strict=True, ge=0.0)] = 0.0
-    image: Optional[str] = ""
+    image: Optional[str] = None
 
     translations: Optional[Dict[str, RestaurantItemTranslation]] = {}
 
 
 class RestaurantCategoryForm(BaseForm):
+    name: Annotated[
+        str,
+        StringConstraints(strip_whitespace=True, min_length=1),
+    ]
+    translations: Optional[Dict[str, RestaurantCategoryTranslation]] = {}
+
+
+class RestaurantItemCategoryForm(BaseForm):
     name: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),

@@ -37,7 +37,7 @@ class RestaurantItem(TranslatableModel):
 
     restaurant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("restaurants.id"))
     category_id: Mapped[uuid.UUID] = mapped_column(
-        ForeignKey("restaurant_item_categories.id")
+        ForeignKey("restaurant_item_categories.id"), nullable=True
     )
     name: Mapped[str] = mapped_column()
     description: Mapped[str] = mapped_column(nullable=True)
@@ -62,49 +62,18 @@ class RestaurantItem(TranslatableModel):
         # Convert price from dollars to cents
         self.price_in_cents = int(value * 100)
 
-    @classmethod
-    def create(cls, **params):
-        category_name = params.pop("category", None)
-
-        if category_name:
-            restaurant_id = params.get("restaurant_id")
-            category, _ = RestaurantItemCategory.get_or_create(
-                restaurant_id=restaurant_id, name=category_name
-            )
-            params["category_id"] = category.id
-
-        obj = super().create(**params)
-
-        return obj
-
     def update(self, **params):
-        category_name = params.pop("category", None)
+        old_category = self.category
 
         super().update(**params)
 
-        self.update_category(category_name)
+        self.check_orphan_category(old_category)
 
     def delete(self):
         old_category = self.category
 
         super().delete()
 
-        self.check_orphan_category(old_category)
-
-    def update_category(self, category_name):
-        if not category_name:
-            return
-
-        old_category = self.category
-        new_category, _ = RestaurantItemCategory.get_or_create(
-            restaurant_id=self.id, name=category_name
-        )
-
-        # Update the category of the current item
-        self.category = new_category
-        self.update()
-
-        # Check if category has no more items associated with it
         self.check_orphan_category(old_category)
 
     def check_orphan_category(self, category):

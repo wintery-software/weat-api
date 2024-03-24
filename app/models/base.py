@@ -3,54 +3,32 @@ from typing import Any, Dict, List, Union
 import uuid
 
 from sqlalchemy import UUID, BinaryExpression, UnaryExpression, func, inspect
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, validates
 
 
 from app import db
+from app.constants import VALID_LOCALES
 
 
-class TranslationMixin:
-    translations: Mapped[List["Translation"]] = []
-    TranslationClass = None
+class ValidationMixin:
+    def validate_required(self, key, value):
+        if value is None:
+            raise ValueError(f"{key} is required")
 
-    def get_translation(self, locale: str) -> "Translation":
-        for translation in self.translations:
-            if translation.locale == locale:
-                return translation
-        return None
+    def validate_min_length(self, key, value, min_length):
+        if len(value) < min_length:
+            raise ValueError(f"{key} must be at least {min_length} characters long")
 
-    def add_translation(self, locale: str, *args, **kwargs):
-        translation = self.get_translation(locale)
-        if translation:
-            translation.update(**kwargs)
-        else:
-            translation = self.TranslationClass.create(
-                parent_id=self.id, locale=locale, **kwargs
-            )
-        return translation
+    def validate_is_in(self, key, value, choices):
+        if value not in choices:
+            raise ValueError(f"{key} must be one of {choices}")
 
-    def remove_translation(self, locale: str):
-        translation = self.get_translation(locale)
-        if translation:
-            translation.delete()
-
-    def update_translations(self, translations):
-        self.delete_all(self.translations)
-
-        for locale, translation_dict in translations.items():
-            self.add_translation(locale=locale, **dict(translation_dict))
-
-    def translation_to_dict(
-        self, locale: str = None, *args, **kwargs
-    ) -> Dict[str, Any]:
-        translation = self.get_translation(locale)
-        if locale and translation:
-            return translation.to_dict()
-
-        return {}
+    def validate_is_instance(self, key, value, instance):
+        if not isinstance(value, instance):
+            raise ValueError(f"{key} must be an instance of {instance}")
 
 
-class BaseModel(db.Model):
+class BaseModel(db.Model, ValidationMixin):
     __abstract__ = True
 
     _fields: List[str] = []
@@ -63,18 +41,17 @@ class BaseModel(db.Model):
         server_default=func.now(), onupdate=func.now()
     )
 
-    def validate_not_blank(self, key, value):
-        if not value or not value.strip():
-            raise ValueError(f"Field {key} cannot be blank")
-        return value
-
     @classmethod
     def create(cls, **params):
         obj = cls(**params)
 
-        db.session.add(obj)
-        db.session.commit()
-        db.session.refresh(obj)
+        try:
+            db.session.add(obj)
+            db.session.commit()
+            db.session.refresh(obj)
+        except Exception as e:
+            db.session.rollback()
+            raise e
 
         return obj
 
@@ -100,7 +77,6 @@ class BaseModel(db.Model):
 
             return obj
         except Exception as e:
-            print(str(e))
             return None
 
     @classmethod
@@ -154,10 +130,54 @@ class BaseModel(db.Model):
         db.session.refresh(self)
         return self
 
+    def rollback(self):
+        db.session.rollback()
+
     def delete_all(self, objs: List["BaseModel"]):
         for obj in objs:
             db.session.delete(obj)
         db.session.commit()
+
+
+class TranslationMixin:
+    translations: Mapped[List["Translation"]] = []
+    TranslationClass = None
+
+    def get_translation(self, locale: str) -> "Translation":
+        for translation in self.translations:
+            if translation.locale == locale:
+                return translation
+        return None
+
+    def add_translation(self, locale: str, *args, **kwargs):
+        translation = self.get_translation(locale)
+        if translation:
+            translation.update(**kwargs)
+        else:
+            translation = self.TranslationClass.create(
+                parent_id=self.id, locale=locale, **kwargs
+            )
+        return translation
+
+    def remove_translation(self, locale: str):
+        translation = self.get_translation(locale)
+        if translation:
+            translation.delete()
+
+    def update_translations(self, translations):
+        self.delete_all(self.translations)
+
+        for locale, translation_dict in translations.items():
+            self.add_translation(locale=locale, **dict(translation_dict))
+
+    def translation_to_dict(
+        self, locale: str = None, *args, **kwargs
+    ) -> Dict[str, Any]:
+        translation = self.get_translation(locale)
+        if locale and translation:
+            return translation.to_dict()
+
+        return {}
 
 
 class TranslatableModel(BaseModel, TranslationMixin):

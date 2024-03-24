@@ -6,6 +6,8 @@ from sqlalchemy.dialects.postgresql import JSON
 
 from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_category import RestaurantCategory
+from app.models.restaurant_item import RestaurantItem
+from app.models.restaurant_item_category import RestaurantItemCategory
 
 
 class RestaurantTranslation(Translation):
@@ -56,12 +58,6 @@ class Restaurant(TranslatableModel):
     )
     TranslationClass = RestaurantTranslation
 
-    @validates("price")
-    def validate_price(self, key, value):
-        if not isinstance(value, int):
-            raise ValueError("Price must be an integer")
-        return value
-
     @classmethod
     def create(cls, **params):
         category_ids = params.pop("category_ids", [])
@@ -83,3 +79,9 @@ class Restaurant(TranslatableModel):
             self.categories.append(category)
 
         super().update(**params)
+
+    def add_item(self, **params):
+        return RestaurantItem.create(restaurant_id=self.id, **params)
+
+    def add_item_category(self, **params):
+        return RestaurantItemCategory.create(restaurant_id=self.id, **params)

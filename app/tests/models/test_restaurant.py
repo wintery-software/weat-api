@@ -3,19 +3,12 @@ from pytest import fail
 from app.models.restaurant import Restaurant, RestaurantTranslation
 from app.models.restaurant_category import RestaurantCategory
 from app.models.restaurant_item import RestaurantItem
+from app.models.restaurant_item_category import RestaurantItemCategory
 
 
 def test_create():
     obj = Restaurant.create(name="Test Restaurant")
     assert obj.id is not None
-
-
-def test_name_present():
-    try:
-        Restaurant.create()
-        fail("Should have raised an exception if no name")
-    except Exception as e:
-        pass
 
 
 def test_place_id_unique():
@@ -36,14 +29,6 @@ def test_price_non_negative():
     try:
         Restaurant.create(name="Test Restaurant", price=-1)
         fail("Should have raised an exception if price is negative")
-    except Exception as e:
-        pass
-
-
-def test_price_non_integer():
-    try:
-        Restaurant.create(name="Test Restaurant", price=1.5)
-        fail("Should have raised an exception if price is not an integer")
     except Exception as e:
         pass
 
@@ -119,7 +104,7 @@ def test_to_dict_with_locale():
 
 
 def test_create_with_categories():
-    category = RestaurantCategory.create(name="category_1")
+    category = RestaurantCategory.create(name="category1")
     obj = Restaurant.create(name="Test Restaurant", category_ids=[category.id])
 
     assert obj.id is not None
@@ -139,15 +124,15 @@ def test_update_with_categories():
 
     assert obj.to_dict()["categories"] == []
 
-    category_1 = RestaurantCategory.create(name="category_1")
-    obj.update(category_ids=[category_1.id])
+    category1 = RestaurantCategory.create(name="category1")
+    obj.update(category_ids=[category1.id])
 
-    assert obj.to_dict()["categories"] == [category_1.to_dict()]
+    assert obj.to_dict()["categories"] == [category1.to_dict()]
 
-    category_2 = RestaurantCategory.create(name="category_2")
-    obj.update(category_ids=[category_1.id, category_2.id])
+    category2 = RestaurantCategory.create(name="category2")
+    obj.update(category_ids=[category1.id, category2.id])
 
-    assert obj.to_dict()["categories"] == [category_1.to_dict(), category_2.to_dict()]
+    assert obj.to_dict()["categories"] == [category1.to_dict(), category2.to_dict()]
 
 
 def test_create_with_translations():
@@ -184,7 +169,7 @@ def test_delete():
 
 
 def test_delete_with_categories():
-    category = RestaurantCategory.create(name="category_1")
+    category = RestaurantCategory.create(name="category1")
     obj = Restaurant.create(name="Test Restaurant", category_ids=[category.id])
 
     assert Restaurant.get(id=obj.id) is not None
@@ -199,7 +184,11 @@ def test_delete_with_categories():
 
 def test_delete_with_items_and_item_categories():
     obj = Restaurant.create(name="Test Restaurant")
-    RestaurantItem.create(restaurant_id=obj.id, name="item1", category="category1")
+    RestaurantItem.create(
+        restaurant_id=obj.id,
+        name="item1",
+        category=RestaurantItemCategory.create(restaurant_id=obj.id, name="category1"),
+    )
 
     assert len(obj.items) == 1
     assert len(obj.item_categories) == 1

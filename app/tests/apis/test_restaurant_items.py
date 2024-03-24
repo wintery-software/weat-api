@@ -1,9 +1,10 @@
 from app.models.restaurant import Restaurant
 from app.models.restaurant_item import RestaurantItem
+from app.models.restaurant_item_category import RestaurantItemCategory
 from app.tests.apis.base import APITestCase
 
 
-class TestRestaurants(APITestCase):
+class TestRestaurantItems(APITestCase):
     def setUp(self) -> None:
         super().setUp()
 
@@ -14,11 +15,14 @@ class TestRestaurants(APITestCase):
             rating=4.5,
             google_place_id="1234",
         )
+        self.restaurant_item_category = RestaurantItemCategory.create(
+            restaurant_id=self.restaurant.id, name="Test Category"
+        )
         self.restaurant_item = RestaurantItem.create(
             restaurant_id=self.restaurant.id,
             name="Test Item",
             description="Test Description",
-            category="Test Item Category",
+            category=self.restaurant_item_category,
             price=5.0,
         )
         self.restaurant_item.add_translation("zh-CN", name="测试菜品")
@@ -45,7 +49,7 @@ class TestRestaurants(APITestCase):
                 {
                     "name": "New Item",
                     "description": "New Description",
-                    "category": "New Category",
+                    "category": str(self.restaurant_item_category.id),
                     "price": 10.0,
                 }
             ],
@@ -62,7 +66,7 @@ class TestRestaurants(APITestCase):
                 {
                     "name": "New Item",
                     "description": "New Description",
-                    "category": "New Category",
+                    "category": str(self.restaurant_item_category.id),
                     "price": 10.0,
                     "translations": {
                         "zh-CN": {"name": "新菜品", "description": "新描述"}

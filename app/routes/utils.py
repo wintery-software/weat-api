@@ -24,9 +24,9 @@ def validate_param(key, validator=None, side_effect=None):
                 if side_effect:
                     kwargs[key] = side_effect(*args, **kwargs)
             except NotFoundError as e:
-                return {"errors": [str(e)]}, HTTPStatus.NOT_FOUND
+                return {"error": str(e)}, HTTPStatus.NOT_FOUND
             except Exception as e:
-                return {"errors": [str(e)]}, HTTPStatus.BAD_REQUEST
+                return {"error": str(e)}, HTTPStatus.BAD_REQUEST
 
             return f(*args, **kwargs)
 
@@ -47,7 +47,7 @@ def validate_form(schema, as_list=False):
                 else:
                     kwargs["body"] = dict(schema(**body))
             except ValidationError as e:
-                return {"errors": e.errors()}, HTTPStatus.BAD_REQUEST
+                return {"error": e.errors()[0]}, HTTPStatus.BAD_REQUEST
 
             return f(*args, **kwargs)
 

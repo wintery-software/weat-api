@@ -1,4 +1,3 @@
-import os
 from app.models.restaurant import Restaurant
 from app.tests.apis.base import APITestCase
 
@@ -58,10 +57,20 @@ class TestRestaurants(APITestCase):
         assert restaurant is not None
         assert restaurant.name == data["name"]
 
-    def test_create_restaurant_invalid(self):
+    def test_create_restaurant_price_invalid(self):
         data = {
             "name": "New Restaurant",
             "price": "invalid",
+        }
+
+        response = self.client.post("/restaurants", json=data)
+
+        assert response.status_code == 400
+
+    def test_create_restaurant_price_non_integer(self):
+        data = {
+            "name": "New Restaurant",
+            "price": 1.5,
         }
 
         response = self.client.post("/restaurants", json=data)

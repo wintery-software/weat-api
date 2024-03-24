@@ -168,6 +168,30 @@ paths:
                 $ref: "#/components/schemas/RestaurantCategory"
       security: []
   /restaurants/categories/{category_id}:
+    put:
+      summary: Update a restaurant category
+      description: Updates a restaurant category by ID.
+      operationId: app.routes.update_restaurant_category
+      tags:
+        - Restaurant Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantCategoryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantCategoryForm"
+      responses:
+        "200":
+          description: Restaurant category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantCategory"
+        "404":
+          description: Restaurant category not found
+      security: []
     delete:
       summary: Delete a restaurant category
       description: Deletes a restaurant category by ID.
@@ -339,6 +363,30 @@ paths:
                 $ref: "#/components/schemas/RestaurantItemCategory"
       security: []
   /restaurants/{restaurant_id}/items/categories/{category_id}:
+    put:
+      summary: Update a restaurant item category
+      description: Updates a restaurant item category by ID.
+      operationId: app.routes.update_restaurant_item_category
+      tags:
+        - Restaurant Item Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantItemCategoryId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RestaurantItemCategoryForm"
+      responses:
+        "200":
+          description: Restaurant item category updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantItemCategory"
+        "404":
+          description: Restaurant item category not found
+      security: []
     delete:
       summary: Delete a restaurant item category
       description: Deletes a restaurant item category by ID.
