@@ -36,7 +36,7 @@ class ProductionConfig(Config):
 
 
 def get_config_object():
-    env = os.environ.get("ENVIRONMENT")
+    env = os.environ.get("FLASK_ENV")
 
     if env == "dev":
         return DevelopmentConfig()
@@ -45,4 +45,4 @@ def get_config_object():
     elif env == "prod":
         return ProductionConfig()
     else:
-        raise Exception("ENVIRONMENT is not set")
+        raise Exception("FLASK_ENV is not set")

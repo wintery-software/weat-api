@@ -2,6 +2,7 @@ from pytest import fail
 
 from app.models.restaurant import Restaurant, RestaurantTranslation
 from app.models.restaurant_category import RestaurantCategory
+from app.models.restaurant_item import RestaurantItem
 
 
 def test_create():
@@ -147,7 +148,7 @@ def test_update_with_categories():
 
 def test_create_with_translations():
     obj = Restaurant.create(
-        name="Test Restaurant", translations=[{"locale": "zh", "name": "测试餐厅"}]
+        name="Test Restaurant", translations={"zh": {"name": "测试餐厅"}}
     )
 
     assert obj.id is not None
@@ -165,7 +166,7 @@ def test_update_with_translations():
     assert obj.get_translation("zh") is not None
     assert obj.get_translation("zh").name == "测试餐厅"
 
-    obj.update(translations=[{"locale": "zh", "name": "新的测试餐厅"}])
+    obj.update(translations={"zh": {"name": "新的测试餐厅"}})
     assert obj.get_translation("zh") is not None
     assert obj.get_translation("zh").name == "新的测试餐厅"
 
@@ -193,7 +194,7 @@ def test_delete_with_categories():
 
 def test_delete_with_items_and_item_categories():
     obj = Restaurant.create(name="Test Restaurant")
-    obj.add_item(name="item1", category="category1")
+    RestaurantItem.create(restaurant_id=obj.id, name="item1", category="category1")
 
     assert len(obj.items) == 1
     assert len(obj.item_categories) == 1
@@ -205,7 +206,7 @@ def test_delete_with_items_and_item_categories():
 
 def test_delete_with_translations():
     obj = Restaurant.create(
-        name="Test Restaurant", translations=[{"locale": "zh", "name": "测试餐厅"}]
+        name="Test Restaurant", translations={"zh": {"name": "测试餐厅"}}
     )
 
     assert Restaurant.get(id=obj.id) is not None

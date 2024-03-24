@@ -4,7 +4,7 @@ from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 from sqlalchemy.dialects.postgresql import JSON
 
-from app.models.base import BaseModel, Translation
+from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_category import RestaurantCategory
 
 
@@ -17,7 +17,7 @@ class RestaurantTranslation(Translation):
     name: Mapped[str] = mapped_column()
 
 
-class Restaurant(BaseModel):
+class Restaurant(TranslatableModel):
     __tablename__ = "restaurants"
     __table_args__ = (
         CheckConstraint("price >= 0", name="check_price_non_negative"),
@@ -67,23 +67,17 @@ class Restaurant(BaseModel):
     @classmethod
     def create(cls, **params):
         categories = params.pop("categories", [])
-        translations = params.pop("translations", [])
 
         obj = super().create(**params)
-
         obj.update_categories(categories)
-        obj.update_translations(translations)
 
         return obj
 
     def update(self, **params):
         categories = params.pop("categories", [])
-        translations = params.pop("translations", [])
+        self.update_categories(categories)
 
         super().update(**params)
-
-        self.update_categories(categories)
-        self.update_translations(translations)
 
     def add_category(self, **params):
         from app.models.restaurant_category import RestaurantCategory
@@ -96,25 +90,3 @@ class Restaurant(BaseModel):
 
         for category_dict in categories:
             self.add_category(**category_dict)
-
-    def add_item(self, **params):
-        from app.models.restaurant_item import RestaurantItem
-
-        return RestaurantItem.create(restaurant_id=self.id, **params)
-
-    def update_items(self, items):
-        self.delete_all(self.items)
-
-        for item_dict in items:
-            self.add_item(**item_dict)
-
-    def add_item_category(self, **params):
-        from app.models.restaurant_item_category import RestaurantItemCategory
-
-        return RestaurantItemCategory.create(restaurant_id=self.id, **params)
-
-    def update_item_categories(self, item_categories):
-        self.delete_all(self.item_categories)
-
-        for item_category_dict in item_categories:
-            self.add_item_category(**item_category_dict)

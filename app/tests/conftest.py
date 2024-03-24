@@ -1,7 +1,7 @@
 import os
 import pytest
 
-from app import create_app, db, app
+from app import create_app, db
 from dotenv import load_dotenv
 
 
@@ -25,9 +25,3 @@ def test_app_context(test_app):
 
         db.session.remove()
         db.drop_all()
-
-
-@pytest.fixture
-def client():
-    with app.test_client() as client:
-        yield client

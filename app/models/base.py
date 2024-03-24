@@ -37,8 +37,8 @@ class TranslationMixin:
     def update_translations(self, translations):
         self.delete_all(self.translations)
 
-        for translation_dict in translations:
-            self.add_translation(**translation_dict)
+        for locale, translation_dict in translations.items():
+            self.add_translation(locale=locale, **dict(translation_dict))
 
     def translation_to_dict(
         self, locale: str = None, *args, **kwargs
@@ -50,7 +50,7 @@ class TranslationMixin:
         return {}
 
 
-class BaseModel(db.Model, TranslationMixin):
+class BaseModel(db.Model):
     __abstract__ = True
 
     _fields: List[str] = []
@@ -100,6 +100,7 @@ class BaseModel(db.Model, TranslationMixin):
 
             return obj
         except Exception as e:
+            print(str(e))
             return None
 
     @classmethod
@@ -147,8 +148,6 @@ class BaseModel(db.Model, TranslationMixin):
             else:
                 result[field] = value
 
-        result.update(self.translation_to_dict(*args, **kwargs))
-
         return result
 
     def refresh(self):
@@ -159,6 +158,31 @@ class BaseModel(db.Model, TranslationMixin):
         for obj in objs:
             db.session.delete(obj)
         db.session.commit()
+
+
+class TranslatableModel(BaseModel, TranslationMixin):
+    __abstract__ = True
+
+    @classmethod
+    def create(cls, **params):
+        translations = params.pop("translations", {})
+
+        obj = super().create(**params)
+        obj.update_translations(translations)
+
+        return obj
+
+    def update(self, **params):
+        translations = params.pop("translations", {})
+        self.update_translations(translations)
+
+        super().update(**params)
+
+    def to_dict(self, locale: str = None, *args, **kwargs):
+        result = super().to_dict(*args, **kwargs)
+        result.update(self.translation_to_dict(locale=locale))
+
+        return result
 
 
 class Translation(BaseModel):

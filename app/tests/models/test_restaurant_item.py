@@ -5,7 +5,9 @@ from app.models.restaurant_item_category import RestaurantItemCategory
 
 def test_delete_item_orphan_category():
     restaurant = Restaurant.create(name="Test Restaurant")
-    item = restaurant.add_item(name="item1", category="category1")
+    item = RestaurantItem.create(
+        restaurant_id=restaurant.id, name="item1", category="category1"
+    )
 
     assert len(restaurant.items) == 1
     assert len(restaurant.item_categories) == 1

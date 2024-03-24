@@ -1,3 +1,4 @@
+import os
 from app.models.restaurant import Restaurant
 from app.tests.apis.base import APITestCase
 
@@ -13,7 +14,7 @@ class TestRestaurants(APITestCase):
             rating=4.5,
             google_place_id="1234",
         )
-        self.restaurant.add_translation("zh", name="测试餐厅")
+        self.restaurant.add_translation("zh-CN", name="测试餐厅")
 
     def test_list_restaurants(self):
         response = self.client.get("/restaurants")
@@ -22,7 +23,7 @@ class TestRestaurants(APITestCase):
         assert len(response.json()) == 1
 
     def test_list_restaurants_with_locale(self):
-        response = self.client.get("/restaurants?locale=zh")
+        response = self.client.get("/restaurants?locale=zh-CN")
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -39,7 +40,7 @@ class TestRestaurants(APITestCase):
         assert response.status_code == 404
 
     def test_get_restaurant_with_locale(self):
-        response = self.client.get(f"/restaurants/{self.restaurant.id}?locale=zh")
+        response = self.client.get(f"/restaurants/{self.restaurant.id}?locale=zh-CN")
 
         assert response.status_code == 200
         assert response.json()["name"] == "测试餐厅"

@@ -1,1 +1,1 @@
-VALID_LOCALES = ["zh-CN", "zh-TW"]
+VALID_LOCALES = ["en", "zh-CN", "zh-TW"]

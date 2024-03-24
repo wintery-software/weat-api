@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import BaseModel, Translation
+from app.models.base import TranslatableModel, Translation
 
 
 class RestaurantCategoryTranslation(Translation):
@@ -15,7 +15,7 @@ class RestaurantCategoryTranslation(Translation):
     name: Mapped[str] = mapped_column()
 
 
-class RestaurantCategory(BaseModel):
+class RestaurantCategory(TranslatableModel):
     __tablename__ = "restaurant_categories"
 
     _fields: List[str] = ["name"]

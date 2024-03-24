@@ -1,49 +1,65 @@
-from typing import Annotated, List, Optional
+from typing import Annotated, Dict, List, Optional
+from pydantic import BaseModel, Field, StringConstraints, validator
 
-from pydantic import UUID4, BaseModel, Field, StringConstraints
+from app.constants import VALID_LOCALES
 
 
-class RestaurantSchema(BaseModel):
-    id: UUID4
-
+class RestaurantForm(BaseModel):
     name: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
-    address: Optional[str]
-    price: Annotated[int, Field(strict=True, ge=0)]
-    rating: Annotated[float, Field(strict=True, ge=0.0, le=5.0)]
+    address: Optional[str] = ""
+    price: Optional[Annotated[int, Field(strict=True, ge=0)]] = 0
+    rating: Optional[Annotated[float, Field(strict=True, ge=0.0, le=5.0)]] = 0.0
     images: List[str] = []
 
-    google_place_id: Optional[str]
+    google_place_id: Optional[str] = ""
 
-    categories: List["RestaurantCategorySchema"] = []
-    items: List["RestaurantItemSchema"] = []
-    item_categories: List["RestaurantItemCategorySchema"] = []
+    translations: Optional[Dict[str, "RestaurantTranslation"]] = {}
+
+    @validator("translations", pre=True)
+    def validate_locales(cls, translations):
+        invalid_locales = [
+            locale for locale in translations.keys() if locale not in VALID_LOCALES
+        ]
+        if invalid_locales:
+            raise ValueError(f"Invalid locales: {', '.join(invalid_locales)}")
+        return translations
 
 
-class RestaurantCategorySchema(BaseModel):
+class RestaurantTranslation(BaseModel):
     name: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
 
 
-class RestaurantItemSchema(BaseModel):
-    id: UUID4
-
+class RestaurantItemForm(BaseModel):
     name: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
-    description: Optional[str]
-    category: Optional["RestaurantItemCategorySchema"]
-    price: Annotated[float, Field(strict=True, gt=0.0, pattern=r"^\d+\.\d{2}$")]
-    image: Optional[str]
+    description: Optional[str] = ""
+    category: Optional[str] = ""
+    price: Annotated[float, Field(strict=True, ge=0.0)] = 0.0
+    image: Optional[str] = ""
+
+    translations: Optional[Dict[str, "RestaurantItemTranslation"]] = {}
+
+    @validator("translations", pre=True)
+    def validate_locales(cls, translations):
+        invalid_locales = [
+            locale for locale in translations.keys() if locale not in VALID_LOCALES
+        ]
+        if invalid_locales:
+            raise ValueError(f"Invalid locales: {', '.join(invalid_locales)}")
+        return translations
 
 
-class RestaurantItemCategorySchema(BaseModel):
+class RestaurantItemTranslation(BaseModel):
     name: Annotated[
         str,
         StringConstraints(strip_whitespace=True, min_length=1),
     ]
+    description: Optional[str] = ""

@@ -5,7 +5,7 @@ import uuid
 from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import BaseModel, Translation
+from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_item_category import RestaurantItemCategory
 
 
@@ -19,7 +19,7 @@ class RestaurantItemTranslation(Translation):
     description: Mapped[str] = mapped_column(nullable=True)
 
 
-class RestaurantItem(BaseModel):
+class RestaurantItem(TranslatableModel):
     __tablename__ = "restaurant_items"
 
     __table_args__ = (
@@ -47,28 +47,33 @@ class RestaurantItem(BaseModel):
     restaurant: Mapped["Restaurant"] = relationship()
     category: Mapped["RestaurantItemCategory"] = relationship(back_populates="items")
 
-    translations: Mapped[List["RestaurantItemTranslation"]] = relationship()
+    translations: Mapped[List["RestaurantItemTranslation"]] = relationship(
+        cascade="all, delete-orphan"
+    )
     TranslationClass = RestaurantItemTranslation
 
     @property
-    def price(self, value):
-        # Convert price from dollars to cents
-        self.price_in_cents = int(value * 100)
-
-    @price.getter
     def price(self):
         # Convert price from cents to dollars
         return self.price_in_cents / 100
 
+    @price.setter
+    def price(self, value):
+        # Convert price from dollars to cents
+        self.price_in_cents = int(value * 100)
+
     @classmethod
     def create(cls, **params):
-        category_name = params.pop("category")
-        restaurant_id = params.get("restaurant_id")
-        category, _ = RestaurantItemCategory.get_or_create(
-            restaurant_id=restaurant_id, name=category_name
-        )
+        category_name = params.pop("category", None)
 
-        obj = super().create(category_id=category.id, **params)
+        if category_name:
+            restaurant_id = params.get("restaurant_id")
+            category, _ = RestaurantItemCategory.get_or_create(
+                restaurant_id=restaurant_id, name=category_name
+            )
+            params["category_id"] = category.id
+
+        obj = super().create(**params)
 
         return obj
 

@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.models.base import BaseModel, Translation
+from app.models.base import TranslatableModel, Translation
 
 
 class ExampleTranslation(Translation):
@@ -17,7 +17,7 @@ class ExampleTranslation(Translation):
     example_field: Mapped[str] = mapped_column()
 
 
-class ExampleModelClass(BaseModel):
+class ExampleModelClass(TranslatableModel):
     __tablename__ = "example_db_model_class_for_translation_tests"
 
     _fields = ["id", "example_field", "created_at", "updated_at"]
