@@ -2,12 +2,12 @@ from datetime import datetime
 from typing import Any, Dict, List, Union
 import uuid
 
-from sqlalchemy import UUID, BinaryExpression, UnaryExpression, func, inspect
-from sqlalchemy.orm import mapped_column, Mapped, validates
+from psycopg2.errors import UniqueViolation
 
+from sqlalchemy import UUID, BinaryExpression, UnaryExpression, func, inspect
+from sqlalchemy.orm import mapped_column, Mapped
 
 from app import db
-from app.constants import VALID_LOCALES
 
 
 class ValidationMixin:
@@ -27,6 +27,10 @@ class ValidationMixin:
         if not isinstance(value, instance):
             raise ValueError(f"{key} must be an instance of {instance}")
 
+    @classmethod
+    def _handle_unique_violation(cls, e):
+        raise ValueError("")
+
 
 class BaseModel(db.Model, ValidationMixin):
     __abstract__ = True
@@ -45,13 +49,9 @@ class BaseModel(db.Model, ValidationMixin):
     def create(cls, **params):
         obj = cls(**params)
 
-        try:
-            db.session.add(obj)
-            db.session.commit()
-            db.session.refresh(obj)
-        except Exception as e:
-            db.session.rollback()
-            raise e
+        db.session.add(obj)
+        db.session.commit()
+        db.session.refresh(obj)
 
         return obj
 
@@ -77,6 +77,7 @@ class BaseModel(db.Model, ValidationMixin):
 
             return obj
         except Exception as e:
+            print(str(e))
             return None
 
     @classmethod
@@ -128,7 +129,9 @@ class BaseModel(db.Model, ValidationMixin):
 
     def refresh(self):
         db.session.refresh(self)
-        return self
+
+    def commit(self):
+        db.session.commit()
 
     def rollback(self):
         db.session.rollback()
@@ -199,7 +202,7 @@ class TranslatableModel(BaseModel, TranslationMixin):
         super().update(**params)
 
     def to_dict(self, locale: str = None, *args, **kwargs):
-        result = super().to_dict(*args, **kwargs)
+        result = super().to_dict(locale=locale, *args, **kwargs)
         result.update(self.translation_to_dict(locale=locale))
 
         return result

@@ -37,12 +37,12 @@ def test_name_unique():
 
 def test_to_dict():
     obj = RestaurantCategory.create(name="Test Category")
-    assert obj.to_dict() == {"name": "Test Category"}
+    assert obj.to_dict() == {"id": obj.id, "name": "Test Category"}
 
 
 def test_to_dict_with_locale():
     obj = RestaurantCategory.create(name="Test Category")
     obj.add_translation(locale="zh", name="测试分类")
 
-    assert obj.to_dict(locale="en") == {"name": "Test Category"}
-    assert obj.to_dict(locale="zh") == {"name": "测试分类"}
+    assert obj.to_dict(locale="en") == {"id": obj.id, "name": "Test Category"}
+    assert obj.to_dict(locale="zh") == {"id": obj.id, "name": "测试分类"}

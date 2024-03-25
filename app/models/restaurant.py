@@ -64,9 +64,8 @@ class Restaurant(TranslatableModel):
 
         obj = super().create(**params)
 
-        for category_id in category_ids:
-            category = RestaurantCategory.get(id=category_id)
-            obj.categories.append(category)
+        if category_ids:
+            obj.update(category_ids=category_ids)
 
         return obj
 
@@ -76,12 +75,24 @@ class Restaurant(TranslatableModel):
         self.categories.clear()
         for category_id in category_ids:
             category = RestaurantCategory.get(id=category_id)
-            self.categories.append(category)
+            self.add_category(category)
 
         super().update(**params)
+
+    def add_category(self, category: RestaurantCategory):
+        self.categories.append(category)
+        self.commit()
 
     def add_item(self, **params):
         return RestaurantItem.create(restaurant_id=self.id, **params)
 
     def add_item_category(self, **params):
         return RestaurantItemCategory.create(restaurant_id=self.id, **params)
+
+    def to_dict(self, locale: str = None, *args, **kwargs):
+        result = super().to_dict(locale, *args, **kwargs)
+
+        if result["name"] != self.name:
+            result["name"] = f"{result['name']} ({self.name})"
+
+        return result

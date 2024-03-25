@@ -26,7 +26,7 @@ class TestRestaurants(APITestCase):
 
         assert response.status_code == 200
         assert len(response.json()) == 1
-        assert response.json()[0]["name"] == "测试餐厅"
+        assert response.json()[0]["name"] == "测试餐厅 (Test Restaurant)"
 
     def test_get_restaurant(self):
         response = self.client.get(f"/restaurants/{self.restaurant.id}")
@@ -42,7 +42,7 @@ class TestRestaurants(APITestCase):
         response = self.client.get(f"/restaurants/{self.restaurant.id}?locale=zh-CN")
 
         assert response.status_code == 200
-        assert response.json()["name"] == "测试餐厅"
+        assert response.json()["name"] == "测试餐厅 (Test Restaurant)"
 
     def test_create_restaurant(self):
         data = {

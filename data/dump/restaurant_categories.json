@@ -1,0 +1,97 @@
+[
+    {
+        "id": "ebc9861f-4598-46ae-9d9d-5e0d607222af",
+        "name": "Korean",
+        "name_zh": "韩餐"
+    },
+    {
+        "id": "df074069-f3b3-43d9-b781-61d39f5cbe65",
+        "name": "Desserts",
+        "name_zh": "甜品"
+    },
+    {
+        "id": "98b79baf-48cc-4582-b35c-dcf0cc1e1a08",
+        "name": "Chinese: Northeastern",
+        "name_zh": "中餐: 东北菜"
+    },
+    {
+        "id": "a76db543-5aea-41d7-a368-0abf4ccb509b",
+        "name": "Noodles",
+        "name_zh": "面条/米线"
+    },
+    {
+        "id": "51238d67-b9b5-4aea-8f8c-be2e29ce9b4a",
+        "name": "Hot Pot",
+        "name_zh": "火锅"
+    },
+    {
+        "id": "63a27cdc-d424-4a8f-86f0-40014b8b1b94",
+        "name": "Vietnamese",
+        "name_zh": "越南菜"
+    },
+    {
+        "id": "57b85849-fdfa-4832-aaeb-1a6f1650b3f5",
+        "name": "Chinese: Sichuanese",
+        "name_zh": "中餐: 川菜"
+    },
+    {
+        "id": "1fdfffc4-ed7d-421d-9667-e46760c3220b",
+        "name": "Japanese",
+        "name_zh": "日料"
+    },
+    {
+        "id": "a6a8e4af-ec39-439a-9379-11dfa6c13812",
+        "name": "Central Asian",
+        "name_zh": "中亚菜"
+    },
+    {
+        "id": "9355933c-f9a2-4d78-8d58-6dc83b564054",
+        "name": "Milk Tea",
+        "name_zh": "奶茶"
+    },
+    {
+        "id": "104883bc-3d77-46a9-b4c0-6a3702972ecb",
+        "name": "Barbecue",
+        "name_zh": "烤肉"
+    },
+    {
+        "id": "2ba2e01c-a51b-44bf-a88d-4eb2a6ac1999",
+        "name": "Chinese",
+        "name_zh": "中餐"
+    },
+    {
+        "id": "359aa2d4-33b3-498d-8ad8-335a21c9f1fb",
+        "name": "Sushi",
+        "name_zh": "寿司"
+    },
+    {
+        "id": "b4dd2607-bbdd-4ec6-bf31-ed0e5b0d3446",
+        "name": "Fast Food",
+        "name_zh": "快餐"
+    },
+    {
+        "id": "dff63387-95a0-430e-9918-0a87c28f59a2",
+        "name": "Chinese: Hunanese",
+        "name_zh": "中餐: 湘菜"
+    },
+    {
+        "id": "92291c79-463e-4de7-9aed-def39c0d6403",
+        "name": "Bakery",
+        "name_zh": "面包"
+    },
+    {
+        "id": "2fcb2e3f-c0be-4d09-9d5d-ca07e7c49497",
+        "name": "Coffee",
+        "name_zh": "咖啡"
+    },
+    {
+        "id": "ab4711bc-1958-48ff-8e89-d82030f9f68b",
+        "name": "Ramen",
+        "name_zh": "拉面"
+    },
+    {
+        "id": "cbf09bfd-cd41-47fd-ba65-419dff7eada5",
+        "name": "Fried Chicken",
+        "name_zh": "炸鸡"
+    }
+]

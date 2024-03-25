@@ -18,7 +18,7 @@ class RestaurantCategoryTranslation(Translation):
 class RestaurantCategory(TranslatableModel):
     __tablename__ = "restaurant_categories"
 
-    _fields: List[str] = ["name"]
+    _fields: List[str] = ["id", "name"]
 
     name: Mapped[str] = mapped_column(unique=True, nullable=False)
 

@@ -94,7 +94,7 @@ def test_to_dict_with_locale():
 
     result = obj.to_dict(locale="zh")
 
-    assert result["name"] == name_zh
+    assert result["name"] == f"{name_zh} ({name})"
     assert result["address"] == address
     assert result["price"] == price
     assert result["rating"] == rating
@@ -210,3 +210,12 @@ def test_delete_with_translations():
 
     assert Restaurant.get(id=obj.id) is None
     assert len(RestaurantTranslation.list()) == 0
+
+
+def test_add_category():
+    obj = Restaurant.create(name="Test Restaurant")
+    category = RestaurantCategory.create(name="category1")
+
+    obj.add_category(category)
+
+    assert obj.to_dict()["categories"] == [category.to_dict()]

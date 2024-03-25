@@ -481,6 +481,10 @@ components:
     RestaurantCategory:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         name:
           type: string
           minLength: 1
@@ -504,8 +508,15 @@ components:
         image:
           type: string
     RestaurantItemCategory:
-      type: string
-      minLength: 1
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          minLength: 1
 
     ########## Forms ##########
     RestaurantForm:

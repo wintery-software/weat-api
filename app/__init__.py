@@ -27,7 +27,11 @@ def create_app():
     connexion_app.add_middleware(
         CORSMiddleware,
         position=MiddlewarePosition.BEFORE_EXCEPTION,
-        allow_origins=["http://localhost:3000", "http://00.local:3000"],
+        allow_origins=[
+            "http://localhost:3000",
+            "http://00.local:3000",
+            "http://air.local:3000",
+        ],
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],

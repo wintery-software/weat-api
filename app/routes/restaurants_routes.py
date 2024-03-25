@@ -42,7 +42,10 @@ def get_restaurant(restaurant: Restaurant, locale: str = None, *args, **kwargs):
 
 @validate_form(schema=RestaurantForm)
 def create_restaurant(body: Dict, *args, **kwargs):
-    restaurant = Restaurant.create(**body)
+    try:
+        restaurant = Restaurant.create(**body)
+    except Exception as e:
+        return {"error": str(e)}, HTTPStatus.BAD_REQUEST
 
     return restaurant.to_dict(), HTTPStatus.CREATED
 
@@ -50,7 +53,10 @@ def create_restaurant(body: Dict, *args, **kwargs):
 @validate_param("restaurant", side_effect=preload_restaurant_from_id)
 @validate_form(schema=RestaurantForm)
 def update_restaurant(restaurant: Restaurant, body: Dict, *args, **kwargs):
-    restaurant.update(**body)
+    try:
+        restaurant.update(**body)
+    except Exception as e:
+        return {"error": str(e)}, HTTPStatus.BAD_REQUEST
 
     return restaurant.to_dict(), HTTPStatus.OK
 

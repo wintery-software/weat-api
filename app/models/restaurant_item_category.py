@@ -26,7 +26,7 @@ class RestaurantItemCategory(TranslatableModel):
         ),
     )
 
-    _fields: List[str] = ["name"]
+    _fields: List[str] = ["id", "name"]
 
     restaurant_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("restaurants.id"))
 
