@@ -96,6 +96,7 @@ celerybeat-schedule
 # dotenv environment variables file
 .env
 .env.*
+!.env.example
 
 # Database files
 *.db
