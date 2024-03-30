@@ -6,7 +6,8 @@ from app.models.restaurant_item_category import RestaurantItemCategory
 
 
 app = create_app()
-root_path = "/Users/0x00-/Developer/acai/weat-api"
+# root_path = "/Users/0x00-/Developer/acai/weat-api"
+root_path = "/weat-api"
 
 
 def seed():

@@ -32,7 +32,7 @@ class RestaurantItemCategory(TranslatableModel):
 
     name: Mapped[str] = mapped_column(nullable=False)
 
-    restaurant: Mapped["Restaurant"] = relationship()
+    restaurant: Mapped["Restaurant"] = relationship(back_populates="item_categories")
     items: Mapped[List["RestaurantItem"]] = relationship()
 
     translations: Mapped[List[RestaurantItemCategoryTranslation]] = relationship(
