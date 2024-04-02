@@ -49,7 +49,7 @@ class TestRestaurantItems(APITestCase):
                 {
                     "name": "New Item",
                     "description": "New Description",
-                    "category": str(self.restaurant_item_category.id),
+                    "category_id": str(self.restaurant_item_category.id),
                     "price": 10.0,
                 }
             ],
@@ -66,7 +66,7 @@ class TestRestaurantItems(APITestCase):
                 {
                     "name": "New Item",
                     "description": "New Description",
-                    "category": str(self.restaurant_item_category.id),
+                    "category_id": str(self.restaurant_item_category.id),
                     "price": 10.0,
                     "translations": {
                         "zh-CN": {"name": "新菜品", "description": "新描述"}

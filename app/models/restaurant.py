@@ -33,6 +33,7 @@ class Restaurant(TranslatableModel):
         "price",
         "rating",
         "images",
+        "url",
         "google_place_id",
         "categories",
     ]
@@ -42,6 +43,7 @@ class Restaurant(TranslatableModel):
     price: Mapped[int] = mapped_column(nullable=True)
     rating: Mapped[float] = mapped_column(nullable=True)
     images: Mapped[List[str]] = mapped_column(JSON, default=[])
+    url: Mapped[str] = mapped_column(nullable=True)
 
     google_place_id: Mapped[str] = mapped_column(unique=True, nullable=True)
 

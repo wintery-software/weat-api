@@ -47,6 +47,7 @@ def test_to_dict():
     price = 2
     rating = 4.5
     images = ["image1.jpg", "image2.jpg"]
+    url = "http://example.com"
     google_place_id = "1234"
 
     obj = Restaurant.create(
@@ -55,6 +56,7 @@ def test_to_dict():
         price=price,
         rating=rating,
         images=images,
+        url=url,
         google_place_id=google_place_id,
     )
 
@@ -78,6 +80,7 @@ def test_to_dict_with_locale():
     price = 2
     rating = 4.5
     images = ["image1.jpg", "image2.jpg"]
+    url = "http://example.com"
     google_place_id = "1234"
 
     obj = Restaurant.create(
@@ -86,6 +89,7 @@ def test_to_dict_with_locale():
         price=price,
         rating=rating,
         images=images,
+        url=url,
         google_place_id=google_place_id,
     )
     obj.add_translation(locale="zh", name=name_zh)

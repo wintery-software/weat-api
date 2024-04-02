@@ -1,8 +1,8 @@
-"""Create restaurant tables
+"""Create restaurants table
 
-Revision ID: 45ce34c4a284
+Revision ID: 4822c96de27a
 Revises: 
-Create Date: 2024-03-23 16:21:08.137060
+Create Date: 2024-04-02 11:24:08.142914
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
 # revision identifiers, used by Alembic.
-revision = '45ce34c4a284'
+revision = '4822c96de27a'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -23,7 +23,8 @@ def upgrade():
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('name')
     )
     op.create_table('restaurants',
     sa.Column('name', sa.String(), nullable=False),
@@ -31,6 +32,7 @@ def upgrade():
     sa.Column('price', sa.Integer(), nullable=True),
     sa.Column('rating', sa.Float(), nullable=True),
     sa.Column('images', postgresql.JSON(astext_type=sa.Text()), nullable=False),
+    sa.Column('url', sa.String(), nullable=True),
     sa.Column('google_place_id', sa.String(), nullable=True),
     sa.Column('id', sa.UUID(), nullable=False),
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
@@ -57,7 +59,8 @@ def upgrade():
     sa.Column('created_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.Column('updated_at', sa.DateTime(), server_default=sa.text('now()'), nullable=False),
     sa.ForeignKeyConstraint(['restaurant_id'], ['restaurants.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    sa.PrimaryKeyConstraint('id'),
+    sa.UniqueConstraint('restaurant_id', 'name', name='unique_item_category_per_restaurant')
     )
     op.create_table('restaurants_restaurant_categories',
     sa.Column('restaurant_id', sa.UUID(), nullable=False),
@@ -88,7 +91,7 @@ def upgrade():
     )
     op.create_table('restaurant_items',
     sa.Column('restaurant_id', sa.UUID(), nullable=False),
-    sa.Column('category_id', sa.UUID(), nullable=False),
+    sa.Column('category_id', sa.UUID(), nullable=True),
     sa.Column('name', sa.String(), nullable=False),
     sa.Column('description', sa.String(), nullable=True),
     sa.Column('price_in_cents', sa.Integer(), nullable=False),

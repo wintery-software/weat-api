@@ -31,6 +31,7 @@ class RestaurantForm(BaseForm):
     price: Optional[Annotated[int, Field(strict=True, ge=0)]] = 0
     rating: Optional[Annotated[float, Field(strict=True, ge=0.0, le=5.0)]] = 0.0
     images: List[str] = []
+    url: Optional[str] = None
 
     category_ids: List[str] = []
     google_place_id: Optional[str] = None

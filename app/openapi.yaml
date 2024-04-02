@@ -472,6 +472,8 @@ components:
           type: array
           items:
             type: string
+        url:
+          type: string
         google_place_id:
           type: string
         categories:
@@ -538,6 +540,8 @@ components:
           type: array
           items:
             type: string
+        url:
+          type: string
         google_place_id:
           type: string
         category_ids:
