@@ -111,3 +111,5 @@ celerybeat-schedule
 .DS_Store
 Thumbs.db
 __pycache__
+scripts
+data
