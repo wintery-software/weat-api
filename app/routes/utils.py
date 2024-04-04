@@ -3,15 +3,18 @@ from http import HTTPStatus
 
 from pydantic import ValidationError
 
-from app.constants import VALID_LOCALES
+from app.constants import VALID_LOCALES, VALID_ORDERS
 from app.routes.errors import NotFoundError
 
 
 def validate_locale(locale: str = None, *args, **kwargs):
-    locale = kwargs.get("locale", "en")
-
-    if locale not in VALID_LOCALES:
+    if locale and locale not in VALID_LOCALES:
         raise ValueError(f"Invalid locale: {locale}")
+
+
+def validate_order(order: str = None, *args, **kwargs):
+    if order and order not in VALID_ORDERS:
+        raise ValueError(f"Invalid order: {order}")
 
 
 def validate_param(key, validator=None, side_effect=None):

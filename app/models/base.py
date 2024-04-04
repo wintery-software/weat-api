@@ -1,10 +1,8 @@
 from datetime import datetime
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List
 import uuid
 
-from psycopg2.errors import UniqueViolation
-
-from sqlalchemy import UUID, BinaryExpression, UnaryExpression, func, inspect
+from sqlalchemy import UUID, asc, desc, func, inspect
 from sqlalchemy.orm import mapped_column, Mapped
 
 from app import db
@@ -94,17 +92,23 @@ class BaseModel(db.Model, ValidationMixin):
     @classmethod
     def list(
         cls,
-        filter_by: Union[UnaryExpression, BinaryExpression] = None,
-        order_by: Union[UnaryExpression, BinaryExpression] = None,
+        sort: str = None,
+        order: str = None,
     ):
-        if filter_by is None:
-            filter_by = True
-        if order_by is None:
-            order_by = cls.created_at
+        if not sort:
+            sort = "created_at"
+        if not order:
+            order = "asc"
 
-        objs = db.session.query(cls).filter(filter_by).order_by(order_by).all()
+        order_expr = asc if order == "asc" else desc
+
+        objs = cls.query().order_by(order_expr(getattr(cls, sort)).nullslast()).all()
 
         return objs
+
+    @classmethod
+    def query(cls):
+        return db.session.query(cls)
 
     def to_dict(self, *args, **kwargs):
         result = {}

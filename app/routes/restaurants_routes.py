@@ -1,12 +1,12 @@
 from http import HTTPStatus
 from typing import Dict
 
-
 from app.models.restaurant import Restaurant
 from app.routes.errors import NotFoundError
 from app.routes.utils import (
     validate_form,
     validate_locale,
+    validate_order,
     validate_param,
 )
 from app.schemas.restaurants import RestaurantForm
@@ -20,9 +20,18 @@ def preload_restaurant_from_id(restaurant_id: str, *args, **kwargs):
     return restaurant
 
 
+def validate_sort(sort: str = None, *args, **kwargs):
+    if sort and sort not in ["price", "rating", "num_items"]:
+        raise ValueError(f"Invalid sort: {sort}")
+
+
 @validate_param("locale", validate_locale)
-def list_restaurants(locale: str = None, *args, **kwargs):
-    restaurants = Restaurant.list()
+@validate_param("sort", validate_sort)
+@validate_param("order", validate_order)
+def list_restaurants(
+    locale: str = None, sort: str = None, order: str = None, *args, **kwargs
+):
+    restaurants = Restaurant.list(sort=sort, order=order)
     restaurants = [restaurant.to_dict(locale=locale) for restaurant in restaurants]
 
     return (

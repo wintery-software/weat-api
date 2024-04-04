@@ -1,8 +1,10 @@
 from typing import List
 import uuid
-from sqlalchemy import CheckConstraint, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
+
+from sqlalchemy import CheckConstraint, ForeignKey, func
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.ext.hybrid import hybrid_property
 
 from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_category import RestaurantCategory
@@ -59,6 +61,20 @@ class Restaurant(TranslatableModel):
         cascade="all, delete-orphan"
     )
     TranslationClass = RestaurantTranslation
+
+    @hybrid_property
+    def num_items(self):
+        return len(self.restaurant_items)
+
+    @num_items.expression
+    def num_items(cls):
+        from app import db
+
+        return (
+            db.select(func.count(RestaurantItem.id))
+            .where(RestaurantItem.restaurant_id == cls.id)
+            .label("num_items")
+        )
 
     @classmethod
     def create(cls, **params):

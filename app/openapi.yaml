@@ -40,6 +40,8 @@ paths:
         - Restaurants
       parameters:
         - $ref: "#/components/parameters/Locale"
+        - $ref: "#/components/parameters/Sort"
+        - $ref: "#/components/parameters/Order"
       responses:
         "200":
           description: List of restaurants
@@ -412,6 +414,22 @@ components:
         type: string
         example: en
         default: en
+    Sort:
+      name: sort
+      in: query
+      description: The field to sort by
+      required: false
+      schema:
+        type: string
+        enum: [price, rating, num_items]
+    Order:
+      name: order
+      in: query
+      description: The order to sort by
+      required: false
+      schema:
+        type: string
+        enum: [asc, desc]
 
     ########## IDs ##########
     RestaurantId:
