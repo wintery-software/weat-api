@@ -4,20 +4,13 @@ from typing import Dict, List
 from app.models.restaurant import Restaurant
 from app.models.restaurant_item import RestaurantItem
 from app.routes.errors import NotFoundError
+from app.routes.restaurants_routes import preload_restaurant_from_id
 from app.routes.utils import (
     validate_form,
     validate_locale,
     validate_param,
 )
 from app.schemas.restaurants import RestaurantItemForm
-
-
-def preload_restaurant_from_id(restaurant_id: str, *args, **kwargs):
-    restaurant = Restaurant.get(id=restaurant_id)
-    if not restaurant:
-        raise ValueError(f"Restaurant not found (id={restaurant_id})")
-
-    return restaurant
 
 
 def preload_restaurant_item_from_id(restaurant_id: str, item_id: str, *args, **kwargs):

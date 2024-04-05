@@ -18,8 +18,11 @@ def preload_restaurant_item_category_from_id(category_id: str, *args, **kwargs):
 
 
 @validate_param("locale", validate_locale)
-def list_restaurant_item_categories(locale: str = None, *args, **kwargs):
-    restaurant_item_categories = RestaurantItemCategory.list()
+@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+def list_restaurant_item_categories(
+    restaurant: Restaurant, locale: str = None, *args, **kwargs
+):
+    restaurant_item_categories = restaurant.item_categories
     restaurant_item_categories = [
         restaurant_item_category.to_dict(locale)
         for restaurant_item_category in restaurant_item_categories

@@ -334,6 +334,7 @@ paths:
         - Restaurant Item Categories
       parameters:
         - $ref: "#/components/parameters/Locale"
+        - $ref: "#/components/parameters/RestaurantId"
       responses:
         "200":
           description: List of restaurant item categories

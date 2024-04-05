@@ -92,12 +92,12 @@ class Restaurant(TranslatableModel):
 
         self.categories.clear()
         for category_id in category_ids:
-            category = RestaurantCategory.get(id=category_id)
-            self.add_category(category)
+            self.add_category(category_id=category_id)
 
         super().update(**params)
 
-    def add_category(self, category: RestaurantCategory):
+    def add_category(self, **params):
+        category = RestaurantCategory.get(id=params["category_id"])
         self.categories.append(category)
         self.commit()
 

@@ -42,7 +42,7 @@ class RestaurantItem(TranslatableModel):
     name: Mapped[str] = mapped_column()
     description: Mapped[str] = mapped_column(nullable=True)
     price_in_cents: Mapped[int] = mapped_column(default=0)
-    image: Mapped[str] = mapped_column(default="")
+    image: Mapped[str] = mapped_column(nullable=True)
 
     restaurant: Mapped["Restaurant"] = relationship(back_populates="items")
     category: Mapped["RestaurantItemCategory"] = relationship(back_populates="items")

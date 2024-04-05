@@ -220,6 +220,6 @@ def test_add_category():
     obj = Restaurant.create(name="Test Restaurant")
     category = RestaurantCategory.create(name="category1")
 
-    obj.add_category(category)
+    obj.add_category(category_id=category.id)
 
     assert obj.to_dict()["categories"] == [category.to_dict()]
