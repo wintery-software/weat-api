@@ -92,19 +92,25 @@ class BaseModel(db.Model, ValidationMixin):
     @classmethod
     def list(
         cls,
-        sort: str = None,
-        order: str = None,
+        sort: str = "created_at",
+        order: str = "asc",
+        page: int = 1,
+        page_size: int = 10,
     ):
-        if not sort:
-            sort = "created_at"
-        if not order:
-            order = "asc"
-
         order_expr = asc if order == "asc" else desc
 
-        objs = cls.query().order_by(order_expr(getattr(cls, sort)).nullslast()).all()
+        objs = (
+            cls.query()
+            .order_by(order_expr(getattr(cls, sort)).nullslast())
+            .paginate(page=page, per_page=page_size, error_out=False)
+            .items
+        )
 
         return objs
+
+    @classmethod
+    def count(cls):
+        return cls.query().count()
 
     @classmethod
     def query(cls):

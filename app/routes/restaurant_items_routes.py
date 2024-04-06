@@ -7,7 +7,6 @@ from app.routes.errors import NotFoundError
 from app.routes.restaurants_routes import preload_restaurant_from_id
 from app.routes.utils import (
     validate_form,
-    validate_locale,
     validate_param,
 )
 from app.schemas.restaurants import RestaurantItemForm
@@ -23,7 +22,6 @@ def preload_restaurant_item_from_id(restaurant_id: str, item_id: str, *args, **k
     return item
 
 
-@validate_param("locale", validate_locale)
 @validate_param("restaurant", side_effect=preload_restaurant_from_id)
 def list_restaurant_items(restaurant: Restaurant, locale: str = None, *args, **kwargs):
     restaurant_items = restaurant.items
@@ -62,7 +60,6 @@ def delete_restaurant_items(restaurant: Restaurant, *args, **kwargs):
     )
 
 
-@validate_param("locale", validate_locale)
 @validate_param("item", side_effect=preload_restaurant_item_from_id)
 def get_restaurant_item(item: RestaurantItem, locale: str = None, *args, **kwargs):
     return (

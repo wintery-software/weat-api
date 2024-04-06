@@ -5,7 +5,7 @@ from app.models.restaurant import Restaurant
 from app.models.restaurant_item_category import RestaurantItemCategory
 from app.routes.errors import NotFoundError
 from app.routes.restaurants_routes import preload_restaurant_from_id
-from app.routes.utils import validate_form, validate_locale, validate_param
+from app.routes.utils import validate_form, validate_param
 from app.schemas.restaurants import RestaurantItemCategoryForm
 
 
@@ -17,7 +17,6 @@ def preload_restaurant_item_category_from_id(category_id: str, *args, **kwargs):
     return restaurant_item_category
 
 
-@validate_param("locale", validate_locale)
 @validate_param("restaurant", side_effect=preload_restaurant_from_id)
 def list_restaurant_item_categories(
     restaurant: Restaurant, locale: str = None, *args, **kwargs

@@ -19,14 +19,46 @@ class TestRestaurants(APITestCase):
         response = self.client.get("/restaurants")
 
         assert response.status_code == 200
-        assert len(response.json()) == 1
+        assert len(response.json()["data"]) == 1
 
     def test_list_restaurants_with_locale(self):
         response = self.client.get("/restaurants?locale=zh-CN")
 
         assert response.status_code == 200
-        assert len(response.json()) == 1
-        assert response.json()[0]["name"] == "测试餐厅 (Test Restaurant)"
+        assert len(response.json()["data"]) == 1
+        assert response.json()["data"][0]["name"] == "测试餐厅 (Test Restaurant)"
+
+    def test_list_restaurants_with_sort(self):
+        Restaurant.create(
+            name="Test Restaurant 2",
+            price=1,
+            rating=5,
+        )
+        Restaurant.create(
+            name="Test Restaurant 3",
+            price=3,
+            rating=0,
+        )
+
+        response = self.client.get("/restaurants?sort=name&order=asc")
+        assert response.json()["data"][0]["name"] == "Test Restaurant"
+
+        response = self.client.get("/restaurants?sort=name&order=desc")
+        assert response.json()["data"][0]["name"] == "Test Restaurant 3"
+
+    def test_pagination(self):
+        for i in range(2, 16):
+            Restaurant.create(
+                name=f"Test Restaurant {i}",
+                price=1,
+                rating=5,
+            )
+
+        response = self.client.get("/restaurants?page_size=10")
+        assert len(response.json()["data"]) == 10
+
+        response = self.client.get("/restaurants?page_size=10&page=2")
+        assert len(response.json()["data"]) == 5
 
     def test_get_restaurant(self):
         response = self.client.get(f"/restaurants/{self.restaurant.id}")
