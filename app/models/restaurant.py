@@ -1,15 +1,16 @@
-from typing import List
 import uuid
+from typing import List
 
 from sqlalchemy import CheckConstraint, ForeignKey, func
-from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_category import RestaurantCategory
 from app.models.restaurant_item import RestaurantItem
 from app.models.restaurant_item_category import RestaurantItemCategory
+from app.modules.aws.s3 import S3
 
 
 class RestaurantTranslation(Translation):
@@ -110,7 +111,14 @@ class Restaurant(TranslatableModel):
     def to_dict(self, locale: str = None, *args, **kwargs):
         result = super().to_dict(locale, *args, **kwargs)
 
+        # TODO: too ugly
         if result["name"] != self.name:
             result["name"] = f"{result['name']} ({self.name})"
+
+        # TODO: still too ugly
+        s3 = S3()
+        result["images"] = [
+            s3.generate_presigned_url(image) for image in result["images"]
+        ]
 
         return result
