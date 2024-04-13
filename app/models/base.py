@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 import uuid
 
 from sqlalchemy import UUID, asc, desc, func, inspect
@@ -94,19 +94,20 @@ class BaseModel(db.Model, ValidationMixin):
         cls,
         sort: str = "created_at",
         order: str = "asc",
-        page: int = 1,
-        page_size: int = 10,
+        page: Optional[int] = 0,
+        page_size: Optional[int] = 0,
     ):
         order_expr = asc if order == "asc" else desc
 
         objs = (
             cls.query()
             .order_by(order_expr(getattr(cls, sort)).nullslast())
-            .paginate(page=page, per_page=page_size, error_out=False)
-            .items
         )
 
-        return objs
+        if page_size:
+            return objs.paginate(page=page, per_page=page_size, error_out=False).items
+        else:
+            return objs.all()
 
     @classmethod
     def count(cls):

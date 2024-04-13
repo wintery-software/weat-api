@@ -98,28 +98,22 @@ def test_list():
 
     assert len(objs) == 2
 
+def test_list_without_pagination():
+    for i in range(30):
+        ExampleModelClass.create()
 
-# def test_list_filter_by():
-#     ExampleModelClass.create(example_field="old_value")
-#     ExampleModelClass.create(example_field="new_value")
+    assert len(ExampleModelClass.list()) == 30
 
-#     objs = ExampleModelClass.list(
-#         filter_by=ExampleModelClass.example_field == "new_value"
-#     )
+def test_list_with_pagination():
+    for i in range(30):
+        ExampleModelClass.create()
 
-#     assert len(objs) == 1
+    assert len(ExampleModelClass.list(page=1, page_size=10)) == 10
+    assert len(ExampleModelClass.list(page=2, page_size=10)) == 10
+    assert len(ExampleModelClass.list(page=3, page_size=10)) == 10
+    assert len(ExampleModelClass.list(page=4, page_size=10)) == 0
 
-
-# def test_list_order_by():
-#     ExampleModelClass.create(example_field="2")
-#     ExampleModelClass.create(example_field="1")
-
-#     objs = ExampleModelClass.list(order_by=ExampleModelClass.example_field)
-
-#     assert len(objs) == 2
-#     assert objs[0].example_field == "1"
-#     assert objs[1].example_field == "2"
-
+    assert len(ExampleModelClass.list(page=1, page_size=5)) == 5
 
 def test_to_dict():
     obj = ExampleModelClass.create()

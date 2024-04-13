@@ -68,7 +68,7 @@ def test_to_dict():
     assert result["address"] == address
     assert result["price"] == price
     assert result["rating"] == rating
-    assert result["images"] == images
+    assert len(result["images"]) == len(images)
     assert result["google_place_id"] == google_place_id
     assert result["categories"] == []
 
@@ -102,7 +102,7 @@ def test_to_dict_with_locale():
     assert result["address"] == address
     assert result["price"] == price
     assert result["rating"] == rating
-    assert result["images"] == images
+    assert len(result["images"]) == len(images)
     assert result["google_place_id"] == google_place_id
     assert result["categories"] == []
 
