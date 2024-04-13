@@ -113,3 +113,4 @@ Thumbs.db
 __pycache__
 scripts
 data
+seed.py
