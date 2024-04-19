@@ -3,34 +3,13 @@ from typing import Any, Dict, List, Optional
 import uuid
 
 from sqlalchemy import UUID, asc, desc, func, inspect
-from sqlalchemy.orm import mapped_column, Mapped
+from sqlalchemy.orm import mapped_column, Mapped, validates
 
 from app import db
+from app.constants import VALID_LOCALES
 
 
-class ValidationMixin:
-    def validate_required(self, key, value):
-        if value is None:
-            raise ValueError(f"{key} is required")
-
-    def validate_min_length(self, key, value, min_length):
-        if len(value) < min_length:
-            raise ValueError(f"{key} must be at least {min_length} characters long")
-
-    def validate_is_in(self, key, value, choices):
-        if value not in choices:
-            raise ValueError(f"{key} must be one of {choices}")
-
-    def validate_is_instance(self, key, value, instance):
-        if not isinstance(value, instance):
-            raise ValueError(f"{key} must be an instance of {instance}")
-
-    @classmethod
-    def _handle_unique_violation(cls, e):
-        raise ValueError("")
-
-
-class BaseModel(db.Model, ValidationMixin):
+class BaseModel(db.Model):
     __abstract__ = True
 
     _fields: List[str] = []
@@ -156,6 +135,15 @@ class BaseModel(db.Model, ValidationMixin):
 class TranslationMixin:
     translations: Mapped[List["Translation"]] = []
     TranslationClass = None
+
+    @validates("translations")
+    def validate_locales(cls, translations):
+        invalid_locales = [
+            locale for locale in translations.keys() if locale not in VALID_LOCALES
+        ]
+        if invalid_locales:
+            raise ValueError(f"Invalid locales: {', '.join(invalid_locales)}")
+        return translations
 
     def get_translation(self, locale: str) -> "Translation":
         for translation in self.translations:

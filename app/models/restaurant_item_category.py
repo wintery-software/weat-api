@@ -1,7 +1,7 @@
 from typing import List
 import uuid
 from sqlalchemy import ForeignKey, UniqueConstraint
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.models.base import TranslatableModel, Translation
 
@@ -39,3 +39,10 @@ class RestaurantItemCategory(TranslatableModel):
         cascade="all, delete-orphan"
     )
     TranslationClass = RestaurantItemCategoryTranslation
+
+    @validates("name")
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Name is required")
+
+        return name

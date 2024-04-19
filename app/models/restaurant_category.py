@@ -33,7 +33,8 @@ class RestaurantCategory(TranslatableModel):
     TranslationClass = RestaurantCategoryTranslation
 
     @validates("name")
-    def validate_name(self, key, value):
-        self.validate_required(key, value)
-        self.validate_min_length(key, value, 1)
-        return value
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Name is required")
+
+        return name

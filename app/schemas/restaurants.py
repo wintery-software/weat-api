@@ -1,7 +1,6 @@
-from typing import Annotated, Any, Dict, List, Optional
-from pydantic import BaseModel, Field, StringConstraints, validator
+from typing import Optional
+from pydantic import BaseModel
 
-from app.constants import VALID_LOCALES
 from app.schemas.translations import (
     RestaurantCategoryTranslation,
     RestaurantItemTranslation,
@@ -9,60 +8,36 @@ from app.schemas.translations import (
 )
 
 
-class BaseForm(BaseModel):
-    @validator("translations", pre=True)
-    def validate_locales(cls, translations):
-        invalid_locales = [
-            locale for locale in translations.keys() if locale not in VALID_LOCALES
-        ]
-        if invalid_locales:
-            raise ValueError(f"Invalid locales: {', '.join(invalid_locales)}")
-        return translations
-
-    translations: Optional[Dict[str, Any]] = {}
-
-
-class RestaurantForm(BaseForm):
-    name: Annotated[
-        str,
-        StringConstraints(strip_whitespace=True, min_length=1),
-    ]
+class RestaurantForm(BaseModel):
+    name: str
     address: Optional[str] = None
-    price: Optional[Annotated[int, Field(strict=True, ge=0)]] = 0
-    rating: Optional[Annotated[float, Field(strict=True, ge=0.0, le=5.0)]] = 0.0
-    images: List[str] = []
+    price: Optional[int] = 0
+    rating: Optional[float] = 0.0
+    images: list[str] = []
     url: Optional[str] = None
+    business_hours: Optional[list[list[dict[str, str]]]] = None
 
-    category_ids: List[str] = []
+    category_ids: list[str] = []
     google_place_id: Optional[str] = None
 
-    translations: Optional[Dict[str, RestaurantTranslation]] = {}
+    translations: Optional[dict[str, RestaurantTranslation]] = {}
 
 
-class RestaurantItemForm(BaseForm):
-    name: Annotated[
-        str,
-        StringConstraints(strip_whitespace=True, min_length=1),
-    ]
+class RestaurantItemForm(BaseModel):
+    name: str
     description: Optional[str] = None
     category_id: Optional[str] = None
-    price: Annotated[float, Field(strict=True, ge=0.0)] = 0.0
+    price: float = 0.0
     image: Optional[str] = None
 
-    translations: Optional[Dict[str, RestaurantItemTranslation]] = {}
+    translations: Optional[dict[str, RestaurantItemTranslation]] = {}
 
 
-class RestaurantCategoryForm(BaseForm):
-    name: Annotated[
-        str,
-        StringConstraints(strip_whitespace=True, min_length=1),
-    ]
-    translations: Optional[Dict[str, RestaurantCategoryTranslation]] = {}
+class RestaurantCategoryForm(BaseModel):
+    name: str
+    translations: Optional[dict[str, RestaurantCategoryTranslation]] = {}
 
 
-class RestaurantItemCategoryForm(BaseForm):
-    name: Annotated[
-        str,
-        StringConstraints(strip_whitespace=True, min_length=1),
-    ]
-    translations: Optional[Dict[str, RestaurantCategoryTranslation]] = {}
+class RestaurantItemCategoryForm(BaseModel):
+    name: str
+    translations: Optional[dict[str, RestaurantCategoryTranslation]] = {}
