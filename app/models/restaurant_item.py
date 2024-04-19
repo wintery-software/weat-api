@@ -3,7 +3,7 @@ import __future__
 from typing import List
 import uuid
 from sqlalchemy import CheckConstraint, ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
 
 from app.models.base import TranslatableModel, Translation
 from app.models.restaurant_item_category import RestaurantItemCategory
@@ -61,6 +61,22 @@ class RestaurantItem(TranslatableModel):
     def price(self, value):
         # Convert price from dollars to cents
         self.price_in_cents = int(value * 100)
+
+    @validates("name")
+    def validate_name(self, key, name):
+        if not name:
+            raise ValueError("Name is required")
+
+        return name
+    
+    @validates("price")
+    def validate_price(self, key, price):
+        if not isinstance(price, float):
+            raise ValueError("Price must be a float")
+        if price < 0:
+            raise ValueError("Price must be non-negative")
+
+        return price
 
     def update(self, **params):
         old_category = self.category
