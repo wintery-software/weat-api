@@ -187,6 +187,25 @@ paths:
                 $ref: "#/components/schemas/RestaurantCategory"
       security: []
   /restaurants/categories/{category_id}:
+    get:
+      summary: Get a restaurant category
+      description: Returns a restaurant category by ID.
+      operationId: app.routes.get_restaurant_category
+      tags:
+        - Restaurant Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantCategoryId"
+        - $ref: "#/components/parameters/Locale"
+      responses:
+        "200":
+          description: Restaurant category found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantCategory"
+        "404":
+          description: Restaurant category not found
+      security: []
     put:
       summary: Update a restaurant category
       description: Updates a restaurant category by ID.
@@ -268,18 +287,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RestaurantItem"
-      security: []
-    delete:
-      summary: Delete restaurant items
-      description: Deletes all/selected restaurant items. If no item IDs are provided, all items will be deleted.
-      operationId: app.routes.delete_restaurant_items
-      tags:
-        - Restaurant Items
-      parameters:
-        - $ref: "#/components/parameters/RestaurantId"
-      responses:
-        "204":
-          description: Restaurant items deleted
       security: []
   /restaurants/{restaurant_id}/items/{item_id}:
     get:
@@ -383,6 +390,26 @@ paths:
                 $ref: "#/components/schemas/RestaurantItemCategory"
       security: []
   /restaurants/{restaurant_id}/items/categories/{category_id}:
+    get:
+      summary: Get a restaurant item category
+      description: Returns a restaurant item category by ID.
+      operationId: app.routes.get_restaurant_item_category
+      tags:
+        - Restaurant Item Categories
+      parameters:
+        - $ref: "#/components/parameters/RestaurantId"
+        - $ref: "#/components/parameters/RestaurantItemCategoryId"
+        - $ref: "#/components/parameters/Locale"
+      responses:
+        "200":
+          description: Restaurant item category found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RestaurantItemCategory"
+        "404":
+          description: Restaurant item category not found
+      security: []
     put:
       summary: Update a restaurant item category
       description: Updates a restaurant item category by ID.

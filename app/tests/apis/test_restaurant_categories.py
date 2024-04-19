@@ -38,6 +38,17 @@ class TestRestaurantCategories(APITestCase):
 
         assert response.status_code == 400
 
+    def test_get_restaurant_category(self):
+        response = self.client.get(f"/restaurants/categories/{self.restaurant_category.id}")
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Test Category"
+
+    def test_get_restaurant_category_not_found(self):
+        response = self.client.get("/restaurants/categories/123")
+
+        assert response.status_code == 404
+
     def test_update_restaurant_category(self):
         response = self.client.put(
             f"/restaurants/categories/{self.restaurant_category.id}",

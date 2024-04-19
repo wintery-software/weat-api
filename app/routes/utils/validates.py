@@ -3,7 +3,7 @@ from http import HTTPStatus
 
 from pydantic import ValidationError
 
-from app.routes.errors import NotFoundError
+from app.routes.utils.errors import NotFoundError
 
 
 def validate_param(key, validator=None, side_effect=None):
