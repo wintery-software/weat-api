@@ -6,6 +6,7 @@ info:
 
 tags:
   - name: Health
+  - name: Trending
   - name: Restaurants
   - name: Restaurant Categories
   - name: Restaurant Items
@@ -28,6 +29,56 @@ paths:
               schema:
                 type: string
                 example: "OK"
+      security: []
+
+  ########## Trending ##########
+  /trending/restaurants:
+    get:
+      summary: List trending restaurants
+      description: Returns a list of trending restaurants.
+      operationId: app.routes.list_trending_restaurants
+      tags:
+        - Trending
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: List of trending restaurants
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Restaurant"
+      security: []
+  /trending/restaurant-items:
+    get:
+      summary: List trending restaurant items
+      description: Returns a list of trending restaurant items.
+      operationId: app.routes.list_trending_restaurant_items
+      tags:
+        - Trending
+      parameters:
+        - $ref: "#/components/parameters/AcceptLanguage"
+      responses:
+        "200":
+          description: List of trending restaurant items
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/RestaurantItem"
       security: []
 
   ########## Restaurants ##########
@@ -56,18 +107,14 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  total:
-                    type: integer
-                  page:
-                    type: integer
-                  page_size:
-                    type: integer
-                  data:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/Restaurant"
+                allOf:
+                  - $ref: "#/components/schemas/Pagination"
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/Restaurant"
       security: []
     post:
       summary: Create a restaurant
@@ -449,7 +496,16 @@ paths:
 
 components:
   parameters:
-    ########## Locale ##########
+    ########## Header parameters ##########
+    AcceptLanguage:
+      name: Accept-Language
+      in: header
+      description: The language setting for the response
+      required: true
+      schema:
+        type: string
+        enum: [en, zh-CN, zh-TW]
+        default: en
     Locale:
       name: locale
       in: query
@@ -736,3 +792,14 @@ components:
         name:
           type: string
           minLength: 1
+
+    ########## Utilities ##########
+    Pagination:
+      type: object
+      properties:
+        total:
+          type: integer
+        page:
+          type: integer
+        page_size:
+          type: integer
