@@ -2,20 +2,12 @@ from http import HTTPStatus
 from typing import Dict
 
 from app.models.restaurant import Restaurant
-from app.routes.errors import NotFoundError
-from app.routes.utils import (
+from app.routes.utils.preloads import preload_restaurant
+from app.routes.utils.validates import (
     validate_form,
     validate_param,
 )
 from app.schemas.restaurants import RestaurantForm
-
-
-def preload_restaurant_from_id(restaurant_id: str, *args, **kwargs):
-    restaurant = Restaurant.get(id=restaurant_id)
-    if not restaurant:
-        raise NotFoundError(f"Restaurant not found (id={restaurant_id})")
-
-    return restaurant
 
 
 def list_restaurants(
@@ -43,7 +35,7 @@ def list_restaurants(
     )
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 def get_restaurant(restaurant: Restaurant, locale: str = None, *args, **kwargs):
     return (
         restaurant.to_dict(locale=locale),
@@ -61,7 +53,7 @@ def create_restaurant(body: Dict, *args, **kwargs):
     return restaurant.to_dict(), HTTPStatus.CREATED
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 @validate_form(schema=RestaurantForm)
 def update_restaurant(restaurant: Restaurant, body: Dict, *args, **kwargs):
     try:
@@ -72,7 +64,7 @@ def update_restaurant(restaurant: Restaurant, body: Dict, *args, **kwargs):
     return restaurant.to_dict(), HTTPStatus.OK
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 def delete_restaurant(restaurant: Restaurant, *args, **kwargs):
     restaurant.delete()
 

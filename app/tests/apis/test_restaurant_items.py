@@ -79,11 +79,3 @@ class TestRestaurantItems(APITestCase):
         assert len(response.json()) == 1
         assert len(self.restaurant.items) == 2
         assert self.restaurant.items[1].get_translation("zh-CN").name == "新菜品"
-
-    def test_delete_restaurant_items(self):
-        response = self.client.delete(
-            f"/restaurants/{self.restaurant.id}/items",
-        )
-
-        assert response.status_code == 204
-        assert len(self.restaurant.items) == 0

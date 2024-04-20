@@ -3,21 +3,13 @@ from typing import Dict
 
 from app.models.restaurant import Restaurant
 from app.models.restaurant_item_category import RestaurantItemCategory
-from app.routes.errors import NotFoundError
-from app.routes.restaurants_routes import preload_restaurant_from_id
-from app.routes.utils import validate_form, validate_param
+from app.routes.utils.preloads import preload_restaurant_item_category
+from app.routes.restaurants_routes import preload_restaurant
+from app.routes.utils.validates import validate_form, validate_param
 from app.schemas.restaurants import RestaurantItemCategoryForm
 
 
-def preload_restaurant_item_category_from_id(category_id: str, *args, **kwargs):
-    restaurant_item_category = RestaurantItemCategory.get(id=category_id)
-    if not restaurant_item_category:
-        raise NotFoundError(f"Restaurant item category not found (id={category_id})")
-
-    return restaurant_item_category
-
-
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 def list_restaurant_item_categories(
     restaurant: Restaurant, locale: str = None, *args, **kwargs
 ):
@@ -33,7 +25,7 @@ def list_restaurant_item_categories(
     )
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 @validate_form(schema=RestaurantItemCategoryForm)
 def create_restaurant_item_category(
     restaurant: Restaurant, body: Dict, *args, **kwargs
@@ -47,7 +39,19 @@ def create_restaurant_item_category(
 
 
 @validate_param(
-    "restaurant_item_category", side_effect=preload_restaurant_item_category_from_id
+    "restaurant_item_category", side_effect=preload_restaurant_item_category
+)
+def get_restaurant_item_category(
+    restaurant_item_category: RestaurantItemCategory, locale: str = None, *args, **kwargs
+):
+    return (
+        restaurant_item_category.to_dict(locale),
+        HTTPStatus.OK,
+    )
+
+
+@validate_param(
+    "restaurant_item_category", side_effect=preload_restaurant_item_category
 )
 @validate_form(schema=RestaurantItemCategoryForm)
 def update_restaurant_item_category(
@@ -65,7 +69,7 @@ def update_restaurant_item_category(
 
 
 @validate_param(
-    "restaurant_item_category", side_effect=preload_restaurant_item_category_from_id
+    "restaurant_item_category", side_effect=preload_restaurant_item_category
 )
 def delete_restaurant_item_category(
     restaurant_item_category: RestaurantItemCategory, *args, **kwargs

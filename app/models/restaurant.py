@@ -106,8 +106,10 @@ class Restaurant(TranslatableModel):
 
     @validates("business_hours")
     def validate_business_hours(self, key, business_hours):
+        default_business_hours = [[] for _ in range(7)]
+
         if not business_hours:
-            return business_hours
+            return default_business_hours
 
         if not isinstance(business_hours, list):
             raise ValueError("Business hours must be a list")

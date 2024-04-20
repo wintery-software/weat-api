@@ -79,7 +79,8 @@ class BaseModel(db.Model):
         order_expr = asc if order == "asc" else desc
 
         objs = (
-            cls.query()
+            cls
+            .query()
             .order_by(order_expr(getattr(cls, sort)).nullslast())
         )
 
@@ -87,6 +88,10 @@ class BaseModel(db.Model):
             return objs.paginate(page=page, per_page=page_size, error_out=False).items
         else:
             return objs.all()
+        
+    @classmethod
+    def list_random(cls, limit: int = 10):
+        return cls.query().order_by(func.random()).limit(limit).all()
 
     @classmethod
     def count(cls):

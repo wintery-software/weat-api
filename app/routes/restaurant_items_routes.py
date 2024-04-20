@@ -3,26 +3,16 @@ from typing import Dict, List
 
 from app.models.restaurant import Restaurant
 from app.models.restaurant_item import RestaurantItem
-from app.routes.errors import NotFoundError
-from app.routes.restaurants_routes import preload_restaurant_from_id
-from app.routes.utils import (
+from app.routes.utils.preloads import preload_restaurant_item
+from app.routes.restaurants_routes import preload_restaurant
+from app.routes.utils.validates import (
     validate_form,
     validate_param,
 )
 from app.schemas.restaurants import RestaurantItemForm
 
 
-def preload_restaurant_item_from_id(restaurant_id: str, item_id: str, *args, **kwargs):
-    item = RestaurantItem.get(restaurant_id=restaurant_id, id=item_id)
-    if not item:
-        raise NotFoundError(
-            f"Restaurant item not found (restaurant_id={restaurant_id} id={item_id})"
-        )
-
-    return item
-
-
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 def list_restaurant_items(restaurant: Restaurant, locale: str = None, *args, **kwargs):
     restaurant_items = restaurant.items
     restaurant_items = [
@@ -35,7 +25,7 @@ def list_restaurant_items(restaurant: Restaurant, locale: str = None, *args, **k
     )
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
+@validate_param("restaurant", side_effect=preload_restaurant)
 @validate_form(schema=RestaurantItemForm, as_list=True)
 def create_restaurant_items(restaurant: Restaurant, body: List[Dict], *args, **kwargs):
     restaurant_items = []
@@ -49,18 +39,7 @@ def create_restaurant_items(restaurant: Restaurant, body: List[Dict], *args, **k
     return (restaurant_items, HTTPStatus.CREATED)
 
 
-@validate_param("restaurant", side_effect=preload_restaurant_from_id)
-def delete_restaurant_items(restaurant: Restaurant, *args, **kwargs):
-    restaurant_items = restaurant.items
-    restaurant.delete_all(restaurant_items)
-
-    return (
-        "",
-        HTTPStatus.NO_CONTENT,
-    )
-
-
-@validate_param("item", side_effect=preload_restaurant_item_from_id)
+@validate_param("item", side_effect=preload_restaurant_item)
 def get_restaurant_item(item: RestaurantItem, locale: str = None, *args, **kwargs):
     return (
         item.to_dict(locale),
@@ -68,7 +47,7 @@ def get_restaurant_item(item: RestaurantItem, locale: str = None, *args, **kwarg
     )
 
 
-@validate_param("item", side_effect=preload_restaurant_item_from_id)
+@validate_param("item", side_effect=preload_restaurant_item)
 def update_restaurant_item(item: RestaurantItem, body: Dict, *args, **kwargs):
     item.update(**body)
 
@@ -78,7 +57,7 @@ def update_restaurant_item(item: RestaurantItem, body: Dict, *args, **kwargs):
     )
 
 
-@validate_param("item", side_effect=preload_restaurant_item_from_id)
+@validate_param("item", side_effect=preload_restaurant_item)
 def delete_restaurant_item(item: RestaurantItem, *args, **kwargs):
     item.delete()
 

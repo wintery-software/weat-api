@@ -2,17 +2,9 @@ from http import HTTPStatus
 from typing import Dict
 
 from app.models.restaurant_category import RestaurantCategory
-from app.routes.errors import NotFoundError
-from app.routes.utils import validate_form, validate_param
+from app.routes.utils.preloads import preload_restaurant_category
+from app.routes.utils.validates import validate_form, validate_param
 from app.schemas.restaurants import RestaurantCategoryForm
-
-
-def preload_restaurant_category_from_id(category_id: str, *args, **kwargs):
-    restaurant_category = RestaurantCategory.get(id=category_id)
-    if not restaurant_category:
-        raise NotFoundError(f"Restaurant category not found (id={category_id})")
-
-    return restaurant_category
 
 
 def list_restaurant_categories(locale: str = None, *args, **kwargs):
@@ -38,7 +30,15 @@ def create_restaurant_category(body: Dict, *args, **kwargs):
     return restaurant_category.to_dict(), HTTPStatus.CREATED
 
 
-@validate_param("restaurant_category", side_effect=preload_restaurant_category_from_id)
+@validate_param("restaurant_category", side_effect=preload_restaurant_category)
+def get_restaurant_category(restaurant_category: RestaurantCategory, locale: str = None, *args, **kwargs):
+    return (
+        restaurant_category.to_dict(locale),
+        HTTPStatus.OK,
+    )
+
+
+@validate_param("restaurant_category", side_effect=preload_restaurant_category)
 @validate_form(schema=RestaurantCategoryForm)
 def update_restaurant_category(
     restaurant_category: RestaurantCategory, body: Dict, *args, **kwargs
@@ -51,7 +51,7 @@ def update_restaurant_category(
     return restaurant_category.to_dict(), HTTPStatus.OK
 
 
-@validate_param("restaurant_category", side_effect=preload_restaurant_category_from_id)
+@validate_param("restaurant_category", side_effect=preload_restaurant_category)
 def delete_restaurant_category(
     restaurant_category: RestaurantCategory, *args, **kwargs
 ):

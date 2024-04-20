@@ -48,7 +48,7 @@ class TestRestaurantItemCategories(APITestCase):
         assert response.json()["name"] == "New Item Category"
         assert len(RestaurantItemCategory.list()) == 2
 
-    def test_create_restaurant_category_duplicate(self):
+    def test_create_restaurant_item_category_duplicate(self):
         response = self.client.post(
             f"/restaurants/{self.restaurant.id}/items/categories",
             json={
@@ -58,7 +58,40 @@ class TestRestaurantItemCategories(APITestCase):
 
         assert response.status_code == 400
 
-    def test_update_restaurant_category(self):
+    def test_get_restaurant_item_category(self):
+        response = self.client.get(
+            f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}"
+        )
+
+        assert response.status_code == 200
+        assert response.json()["name"] == "Test Item Category"
+    
+    def test_get_restaurant_item_category_not_found(self):
+        response = self.client.get(
+            f"/restaurants/{self.restaurant.id}/items/categories/123"
+        )
+
+        assert response.status_code == 404
+
+    def test_get_restaurant_item_category_with_mismatching_restaurant(self):
+        restaurant2 = Restaurant.create(
+            name="Test Restaurant 2",
+            address="456 Main St",
+            price=2,
+            rating=4.5,
+            google_place_id="5678",
+        )
+        restaurant_item_category2 = RestaurantItemCategory.create(
+            restaurant_id=restaurant2.id, name="Test Item Category 2"
+        )
+
+        response = self.client.get(
+            f"/restaurants/{self.restaurant.id}/items/categories/{restaurant_item_category2.id}"
+        )
+
+        assert response.status_code == 404
+
+    def test_update_restaurant_item_category(self):
         response = self.client.put(
             f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}",
             json={"name": "Updated Category"},
@@ -67,7 +100,7 @@ class TestRestaurantItemCategories(APITestCase):
         assert response.status_code == 200
         assert response.json()["name"] == "Updated Category"
 
-    def test_update_restaurant_category_not_found(self):
+    def test_update_restaurant_item_category_not_found(self):
         response = self.client.put(
             f"/restaurants/{self.restaurant.id}/items/categories/123",
             json={"name": "Test"},
@@ -75,7 +108,7 @@ class TestRestaurantItemCategories(APITestCase):
 
         assert response.status_code == 404
 
-    def test_update_restaurant_category_duplicate(self):
+    def test_update_restaurant_item_category_duplicate(self):
         new_restaurant_item_category = RestaurantItemCategory.create(
             restaurant_id=self.restaurant.id, name="Test Item Category 2"
         )
@@ -87,7 +120,7 @@ class TestRestaurantItemCategories(APITestCase):
 
         assert response.status_code == 400
 
-    def test_delete_restaurant_category(self):
+    def test_delete_restaurant_item_category(self):
         response = self.client.delete(
             f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}"
         )
