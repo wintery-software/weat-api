@@ -30,6 +30,23 @@ paths:
                 type: string
                 example: "OK"
       security: []
+  /apis:
+    get:
+      summary: List all APIs
+      description: Returns a list of all APIs.
+      operationId: app.routes.list_apis
+      tags:
+        - Health
+      responses:
+        "200":
+          description: List of APIs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+      security: []
 
   ########## Trending ##########
   /trending/restaurants:
