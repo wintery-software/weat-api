@@ -5,6 +5,7 @@ from app.models.restaurant import Restaurant
 from app.models.restaurant_item import RestaurantItem
 from app.routes.utils.preloads import preload_restaurant_item
 from app.routes.restaurants_routes import preload_restaurant
+from app.routes.utils.requests import get_locale
 from app.routes.utils.validates import (
     validate_form,
     validate_param,
@@ -13,10 +14,11 @@ from app.schemas.restaurants import RestaurantItemForm
 
 
 @validate_param("restaurant", side_effect=preload_restaurant)
-def list_restaurant_items(restaurant: Restaurant, locale: str = None, *args, **kwargs):
+def list_restaurant_items(restaurant: Restaurant, *args, **kwargs):
     restaurant_items = restaurant.items
     restaurant_items = [
-        restaurant_item.to_dict(locale) for restaurant_item in restaurant_items
+        restaurant_item.to_dict(locale=get_locale())
+        for restaurant_item in restaurant_items
     ]
 
     return (
@@ -40,9 +42,9 @@ def create_restaurant_items(restaurant: Restaurant, body: List[Dict], *args, **k
 
 
 @validate_param("item", side_effect=preload_restaurant_item)
-def get_restaurant_item(item: RestaurantItem, locale: str = None, *args, **kwargs):
+def get_restaurant_item(item: RestaurantItem, *args, **kwargs):
     return (
-        item.to_dict(locale),
+        item.to_dict(locale=get_locale()),
         HTTPStatus.OK,
     )
 

@@ -3,6 +3,7 @@ from typing import Dict
 
 from app.models.restaurant import Restaurant
 from app.routes.utils.preloads import preload_restaurant
+from app.routes.utils.requests import get_locale
 from app.routes.utils.validates import (
     validate_form,
     validate_param,
@@ -11,7 +12,6 @@ from app.schemas.restaurants import RestaurantForm
 
 
 def list_restaurants(
-    locale: str = "en",
     sort: str = "created_at",
     order: str = "asc",
     page: int = 1,
@@ -22,7 +22,9 @@ def list_restaurants(
     restaurants = Restaurant.list(
         sort=sort, order=order, page=page, page_size=page_size
     )
-    restaurants = [restaurant.to_dict(locale=locale) for restaurant in restaurants]
+    restaurants = [
+        restaurant.to_dict(locale=get_locale()) for restaurant in restaurants
+    ]
 
     return (
         {
@@ -36,9 +38,9 @@ def list_restaurants(
 
 
 @validate_param("restaurant", side_effect=preload_restaurant)
-def get_restaurant(restaurant: Restaurant, locale: str = None, *args, **kwargs):
+def get_restaurant(restaurant: Restaurant, *args, **kwargs):
     return (
-        restaurant.to_dict(locale=locale),
+        restaurant.to_dict(locale=get_locale()),
         HTTPStatus.OK,
     )
 

@@ -3,14 +3,15 @@ from typing import Dict
 
 from app.models.restaurant_category import RestaurantCategory
 from app.routes.utils.preloads import preload_restaurant_category
+from app.routes.utils.requests import get_locale
 from app.routes.utils.validates import validate_form, validate_param
 from app.schemas.restaurants import RestaurantCategoryForm
 
 
-def list_restaurant_categories(locale: str = None, *args, **kwargs):
+def list_restaurant_categories(*args, **kwargs):
     restaurant_categories = RestaurantCategory.list()
     restaurant_categories = [
-        restaurant_category.to_dict(locale)
+        restaurant_category.to_dict(locale=get_locale())
         for restaurant_category in restaurant_categories
     ]
 
@@ -31,9 +32,9 @@ def create_restaurant_category(body: Dict, *args, **kwargs):
 
 
 @validate_param("restaurant_category", side_effect=preload_restaurant_category)
-def get_restaurant_category(restaurant_category: RestaurantCategory, locale: str = None, *args, **kwargs):
+def get_restaurant_category(restaurant_category: RestaurantCategory, *args, **kwargs):
     return (
-        restaurant_category.to_dict(locale),
+        restaurant_category.to_dict(locale=get_locale()),
         HTTPStatus.OK,
     )
 

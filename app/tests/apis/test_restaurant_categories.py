@@ -16,7 +16,9 @@ class TestRestaurantCategories(APITestCase):
         assert len(response.json()) == 1
 
     def test_list_restaurant_categories_with_locale(self):
-        response = self.client.get("/restaurants/categories?locale=zh-CN")
+        response = self.client.get(
+            "/restaurants/categories?locale=zh-CN", headers={"Accept-Language": "zh-CN"}
+        )
 
         assert response.status_code == 200
         assert len(response.json()) == 1
@@ -39,7 +41,9 @@ class TestRestaurantCategories(APITestCase):
         assert response.status_code == 400
 
     def test_get_restaurant_category(self):
-        response = self.client.get(f"/restaurants/categories/{self.restaurant_category.id}")
+        response = self.client.get(
+            f"/restaurants/categories/{self.restaurant_category.id}"
+        )
 
         assert response.status_code == 200
         assert response.json()["name"] == "Test Category"

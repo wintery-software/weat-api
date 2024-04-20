@@ -35,7 +35,8 @@ class TestRestaurantItems(APITestCase):
 
     def test_list_restaurant_items_with_locale(self):
         response = self.client.get(
-            f"/restaurants/{self.restaurant.id}/items?locale=zh-CN"
+            f"/restaurants/{self.restaurant.id}/items?locale=zh-CN",
+            headers={"Accept-Language": "zh-CN"},
         )
 
         assert response.status_code == 200
