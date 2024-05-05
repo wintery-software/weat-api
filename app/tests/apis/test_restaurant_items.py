@@ -54,6 +54,7 @@ class TestRestaurantItems(APITestCase):
                     "price": 10.0,
                 }
             ],
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 201
@@ -74,6 +75,7 @@ class TestRestaurantItems(APITestCase):
                     },
                 }
             ],
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 201

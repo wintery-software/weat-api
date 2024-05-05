@@ -48,7 +48,9 @@ class Restaurant(TranslatableModel):
     rating: Mapped[float] = mapped_column(nullable=True)
     images: Mapped[list[str]] = mapped_column(JSON, default=[])
     url: Mapped[str] = mapped_column(nullable=True)
-    business_hours: Mapped[list[list[dict[str, str]]]] = mapped_column(JSON, nullable=True)
+    business_hours: Mapped[list[list[dict[str, str]]]] = mapped_column(
+        JSON, nullable=True
+    )
 
     google_place_id: Mapped[str] = mapped_column(unique=True, nullable=True)
 
@@ -78,14 +80,14 @@ class Restaurant(TranslatableModel):
             .where(RestaurantItem.restaurant_id == cls.id)
             .label("num_items")
         )
-    
+
     @validates("name")
     def validate_name(self, key, name):
         if not name:
             raise ValueError("Name is required")
 
         return name
-    
+
     @validates("price")
     def validate_price(self, key, price):
         if not isinstance(price, int):
@@ -94,7 +96,7 @@ class Restaurant(TranslatableModel):
             raise ValueError("Price must be non-negative")
 
         return price
-    
+
     @validates("rating")
     def validate_rating(self, key, rating):
         if not isinstance(rating, float) and not isinstance(rating, int):
@@ -116,7 +118,7 @@ class Restaurant(TranslatableModel):
 
         if len(business_hours) != 7:
             raise ValueError("Business hours must have 7 days")
-        
+
         for day in business_hours:
             if not isinstance(day, list):
                 raise ValueError("Each day must be a list")
@@ -125,7 +127,7 @@ class Restaurant(TranslatableModel):
                     raise ValueError("Each time range must be a dict")
                 if "start" not in time_range or "end" not in time_range:
                     raise ValueError("Each time range must have a start and end key")
-                
+
                 format = "%H:%M"
                 datetime.strptime(time_range["start"], format)
                 datetime.strptime(time_range["end"], format)

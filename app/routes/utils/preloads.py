@@ -31,8 +31,12 @@ def preload_restaurant_item(restaurant_id: str, item_id: str, *args, **kwargs):
     return item
 
 
-def preload_restaurant_item_category(restaurant_id: str, category_id: str, *args, **kwargs):
-    restaurant_item_category = RestaurantItemCategory.get(id=category_id, restaurant_id=restaurant_id)
+def preload_restaurant_item_category(
+    restaurant_id: str, category_id: str, *args, **kwargs
+):
+    restaurant_item_category = RestaurantItemCategory.get(
+        id=category_id, restaurant_id=restaurant_id
+    )
     if not restaurant_item_category:
         raise NotFoundError(f"Restaurant item category not found (id={category_id})")
 

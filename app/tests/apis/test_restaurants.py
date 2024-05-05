@@ -86,7 +86,11 @@ class TestRestaurants(APITestCase):
             "name": "New Restaurant",
         }
 
-        response = self.client.post("/restaurants", json=data)
+        response = self.client.post(
+            "/restaurants",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 201
 
@@ -100,7 +104,11 @@ class TestRestaurants(APITestCase):
             "price": "invalid",
         }
 
-        response = self.client.post("/restaurants", json=data)
+        response = self.client.post(
+            "/restaurants",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 400
 
@@ -110,7 +118,11 @@ class TestRestaurants(APITestCase):
             "price": 1.5,
         }
 
-        response = self.client.post("/restaurants", json=data)
+        response = self.client.post(
+            "/restaurants",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 400
 
@@ -119,7 +131,11 @@ class TestRestaurants(APITestCase):
             "name": "Updated Restaurant",
         }
 
-        response = self.client.put(f"/restaurants/{self.restaurant.id}", json=data)
+        response = self.client.put(
+            f"/restaurants/{self.restaurant.id}",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 200
 
@@ -131,7 +147,11 @@ class TestRestaurants(APITestCase):
             "name": "Updated Restaurant",
         }
 
-        response = self.client.put("/restaurants/123", json=data)
+        response = self.client.put(
+            "/restaurants/123",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 404
 
@@ -141,12 +161,19 @@ class TestRestaurants(APITestCase):
             "price": "invalid",
         }
 
-        response = self.client.put(f"/restaurants/{self.restaurant.id}", json=data)
+        response = self.client.put(
+            f"/restaurants/{self.restaurant.id}",
+            json=data,
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 400
 
     def test_delete_restaurant(self):
-        response = self.client.delete(f"/restaurants/{self.restaurant.id}")
+        response = self.client.delete(
+            f"/restaurants/{self.restaurant.id}",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 204
 
@@ -154,6 +181,9 @@ class TestRestaurants(APITestCase):
         assert restaurant is None
 
     def test_delete_restaurant_not_found(self):
-        response = self.client.delete("/restaurants/123")
+        response = self.client.delete(
+            "/restaurants/123",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 404

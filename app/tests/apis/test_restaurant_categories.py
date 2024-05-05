@@ -26,7 +26,9 @@ class TestRestaurantCategories(APITestCase):
 
     def test_create_restaurant_category(self):
         response = self.client.post(
-            "/restaurants/categories", json={"name": "New Category"}
+            "/restaurants/categories",
+            json={"name": "New Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 201
@@ -35,14 +37,17 @@ class TestRestaurantCategories(APITestCase):
 
     def test_create_restaurant_category_duplicate(self):
         response = self.client.post(
-            "/restaurants/categories", json={"name": "Test Category"}
+            "/restaurants/categories",
+            json={"name": "Test Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 400
 
     def test_get_restaurant_category(self):
         response = self.client.get(
-            f"/restaurants/categories/{self.restaurant_category.id}"
+            f"/restaurants/categories/{self.restaurant_category.id}",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 200
@@ -57,6 +62,7 @@ class TestRestaurantCategories(APITestCase):
         response = self.client.put(
             f"/restaurants/categories/{self.restaurant_category.id}",
             json={"name": "Updated Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 200
@@ -66,6 +72,7 @@ class TestRestaurantCategories(APITestCase):
         response = self.client.put(
             "/restaurants/categories/123",
             json={"name": "Test"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 404
@@ -76,19 +83,24 @@ class TestRestaurantCategories(APITestCase):
         response = self.client.put(
             f"/restaurants/categories/{new_restaurant_category.id}",
             json={"name": "Test Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 400
 
     def test_delete_restaurant_category(self):
         response = self.client.delete(
-            f"/restaurants/categories/{self.restaurant_category.id}"
+            f"/restaurants/categories/{self.restaurant_category.id}",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 204
         assert len(RestaurantCategory.list()) == 0
 
     def test_delete_restaurant_category_not_found(self):
-        response = self.client.delete("/restaurants/categories/123")
+        response = self.client.delete(
+            "/restaurants/categories/123",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
+        )
 
         assert response.status_code == 404

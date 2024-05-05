@@ -6,6 +6,8 @@ info:
 
 tags:
   - name: Health
+  - name: Users
+  - name: Sessions
   - name: Trending
   - name: Restaurants
   - name: Restaurant Categories
@@ -46,6 +48,100 @@ paths:
                 type: array
                 items:
                   type: string
+      security: []
+
+  ########## Users ##########
+  /users:
+    get:
+      summary: List all users
+      description: Returns a list of all users.
+      operationId: app.routes.list_users
+      tags:
+        - Users
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+      security:
+        - AdminBearerAuth: []
+    post:
+      summary: Create a user
+      description: Creates a new user.
+      operationId: app.routes.create_user
+      tags:
+        - Users
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserForm"
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Bad request
+      security: []
+
+  ########## Sessions ##########
+  /login:
+    post:
+      summary: Login
+      description: This endpoint authenticates user credentials and returns a JWT if the credentials are valid.
+      operationId: app.routes.login
+      tags:
+        - Sessions
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: The username of the user
+                password:
+                  type: string
+                  description: The password of the user
+              required:
+                - username
+                - password
+      responses:
+        "200":
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    description: The JWT access token
+                    example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjEwMzQwZjYwZjQwZjQwZjQwZjQwZjQwIiwiaWF0IjoxNjM0NzQwNjQ4LCJleHAiOjE2MzQ3NDQyNDh9.1"
+        "401":
+          description: Unauthorized
+      security: []
+    
+  /logout:
+    post:
+      summary: Logout
+      description: This endpoint logs out the user by invalidating the JWT.
+      operationId: app.routes.logout
+      tags:
+        - Sessions
+      responses:
+        "204":
+          description: User logged out
       security: []
 
   ########## Trending ##########
@@ -152,7 +248,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Restaurant"
-      security: []
+      security:
+        - AdminBearerAuth: []
   /restaurants/{restaurant_id}:
     get:
       summary: Get a restaurant
@@ -196,7 +293,8 @@ paths:
                 $ref: "#/components/schemas/Restaurant"
         "404":
           description: Restaurant not found
-      security: []
+      security:
+        - AdminBearerAuth: []
     delete:
       summary: Delete a restaurant
       description: Deletes a restaurant by ID.
@@ -208,7 +306,8 @@ paths:
       responses:
         "204":
           description: Restaurant deleted
-      security: []
+      security:
+        - AdminBearerAuth: []
 
   ########## Restaurant Categories ##########
   /restaurants/categories:
@@ -249,7 +348,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RestaurantCategory"
-      security: []
+      security:
+        - AdminBearerAuth: []
   /restaurants/categories/{category_id}:
     get:
       summary: Get a restaurant category
@@ -293,7 +393,8 @@ paths:
                 $ref: "#/components/schemas/RestaurantCategory"
         "404":
           description: Restaurant category not found
-      security: []
+      security:
+        - AdminBearerAuth: []
     delete:
       summary: Delete a restaurant category
       description: Deletes a restaurant category by ID.
@@ -305,7 +406,8 @@ paths:
       responses:
         "204":
           description: Restaurant category deleted
-      security: []
+      security:
+        - AdminBearerAuth: []
 
   ########## Restaurant Items ##########
   /restaurants/{restaurant_id}/items:
@@ -351,7 +453,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RestaurantItem"
-      security: []
+      security:
+        - AdminBearerAuth: []
   /restaurants/{restaurant_id}/items/{item_id}:
     get:
       summary: Get a restaurant item
@@ -397,7 +500,8 @@ paths:
                 $ref: "#/components/schemas/RestaurantItem"
         "404":
           description: Restaurant item not found
-      security: []
+      security:
+        - AdminBearerAuth: []
     delete:
       summary: Delete a restaurant item
       description: Deletes a restaurant item by ID.
@@ -410,7 +514,8 @@ paths:
       responses:
         "204":
           description: Restaurant item deleted
-      security: []
+      security:
+        - AdminBearerAuth: []
 
   ########## Restaurant Item Categories ##########
   /restaurants/{restaurant_id}/items/categories:
@@ -452,7 +557,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/RestaurantItemCategory"
-      security: []
+      security:
+        - AdminBearerAuth: []
   /restaurants/{restaurant_id}/items/categories/{category_id}:
     get:
       summary: Get a restaurant item category
@@ -497,7 +603,8 @@ paths:
                 $ref: "#/components/schemas/RestaurantItemCategory"
         "404":
           description: Restaurant item category not found
-      security: []
+      security:
+        - AdminBearerAuth: []
     delete:
       summary: Delete a restaurant item category
       description: Deletes a restaurant item category by ID.
@@ -509,7 +616,8 @@ paths:
       responses:
         "204":
           description: Restaurant item category deleted
-      security: []
+      security:
+        - AdminBearerAuth: []
 
 components:
   parameters:
@@ -591,6 +699,20 @@ components:
 
   schemas:
     ########## Models ##########
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        username:
+          type: string
+          minLength: 1
+        role:
+          type: string
+          enum: [user, admin]
+          default: user
     Restaurant:
       type: object
       properties:
@@ -686,6 +808,18 @@ components:
               example: "21:00"
 
     ########## Forms ##########
+    UserForm:
+      type: object
+      properties:
+        username:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          minLength: 1
+      required:
+        - username
+        - password
     RestaurantForm:
       type: object
       properties:
@@ -810,3 +944,15 @@ components:
           type: integer
         page_size:
           type: integer
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: app.routes.utils.requests.verify_token
+    AdminBearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      x-bearerInfoFunc: app.routes.utils.requests.verify_admin_token

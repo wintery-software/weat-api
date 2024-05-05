@@ -1,6 +1,5 @@
 import __future__
 
-from typing import List
 import uuid
 from sqlalchemy import CheckConstraint, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship, validates
@@ -12,7 +11,7 @@ from app.models.restaurant_item_category import RestaurantItemCategory
 class RestaurantItemTranslation(Translation):
     __tablename__ = "restaurant_items_translations"
 
-    _fields: List[str] = ["name", "description"]
+    _fields: list[str] = ["name", "description"]
 
     parent_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("restaurant_items.id"))
     name: Mapped[str] = mapped_column()
@@ -26,7 +25,7 @@ class RestaurantItem(TranslatableModel):
         CheckConstraint("price_in_cents >= 0", name="check_price_non_negative"),
     )
 
-    _fields: List[str] = [
+    _fields: list[str] = [
         "id",
         "name",
         "description",
@@ -47,7 +46,7 @@ class RestaurantItem(TranslatableModel):
     restaurant: Mapped["Restaurant"] = relationship(back_populates="items")
     category: Mapped["RestaurantItemCategory"] = relationship(back_populates="items")
 
-    translations: Mapped[List["RestaurantItemTranslation"]] = relationship(
+    translations: Mapped[list["RestaurantItemTranslation"]] = relationship(
         cascade="all, delete-orphan"
     )
     TranslationClass = RestaurantItemTranslation
@@ -68,7 +67,7 @@ class RestaurantItem(TranslatableModel):
             raise ValueError("Name is required")
 
         return name
-    
+
     @validates("price")
     def validate_price(self, key, price):
         if not isinstance(price, float):

@@ -43,6 +43,7 @@ class TestRestaurantItemCategories(APITestCase):
             json={
                 "name": "New Item Category",
             },
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 201
@@ -55,6 +56,7 @@ class TestRestaurantItemCategories(APITestCase):
             json={
                 "name": "Test Item Category",
             },
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 400
@@ -96,6 +98,7 @@ class TestRestaurantItemCategories(APITestCase):
         response = self.client.put(
             f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}",
             json={"name": "Updated Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 200
@@ -105,6 +108,7 @@ class TestRestaurantItemCategories(APITestCase):
         response = self.client.put(
             f"/restaurants/{self.restaurant.id}/items/categories/123",
             json={"name": "Test"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 404
@@ -117,13 +121,15 @@ class TestRestaurantItemCategories(APITestCase):
         response = self.client.put(
             f"/restaurants/{self.restaurant.id}/items/categories/{new_restaurant_item_category.id}",
             json={"name": "Test Item Category"},
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 400
 
     def test_delete_restaurant_item_category(self):
         response = self.client.delete(
-            f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}"
+            f"/restaurants/{self.restaurant.id}/items/categories/{self.restaurant_item_category.id}",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 204
@@ -131,7 +137,8 @@ class TestRestaurantItemCategories(APITestCase):
 
     def test_delete_restaurant_item_category_not_found(self):
         response = self.client.delete(
-            f"/restaurants/{self.restaurant.id}/items/categories/123"
+            f"/restaurants/{self.restaurant.id}/items/categories/123",
+            headers={"Authorization": f"Bearer {self.admin_access_token}"},
         )
 
         assert response.status_code == 404
