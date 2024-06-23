@@ -114,3 +114,4 @@ __pycache__
 scripts
 data
 seed.py
+/tmp
