@@ -1,15 +1,16 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 import re
-from typing import Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 
 from app.constants import PHONE_NUMBER_REGEX
 
 
-class TimeInterval(BaseModel):
-    open: str
-    close: str
+class OpeningHours(BaseModel):
+    day: int = Field(examples=[1])
+    open: str = Field(examples=["08:00"])
+    close: str = Field(examples=["20:00"])
 
     @field_validator("open", "close")
     @classmethod
@@ -17,30 +18,26 @@ class TimeInterval(BaseModel):
         try:
             datetime.strptime(v, "%H:%M")
         except ValueError:
-            raise ValueError("time must be in HH:MM format")
+            raise ValueError("Time must be in HH:mm format")
         return v
 
     @field_validator("close")
     @classmethod
     def validate_time_order(cls, v, values):
-        print(values)
         open_str = values.data.get("open")
         if open_str:
             open_time = datetime.strptime(open_str, "%H:%M").time()
             close_time = datetime.strptime(v, "%H:%M").time()
             if open_time >= close_time:
-                raise ValueError("open time must be earlier than close time")
+                raise ValueError("Open time must be earlier than close time")
         return v
 
-
-class OpeningHours(BaseModel):
-    monday: Optional[list[TimeInterval]] = None
-    tuesday: Optional[list[TimeInterval]] = None
-    wednesday: Optional[list[TimeInterval]] = None
-    thursday: Optional[list[TimeInterval]] = None
-    friday: Optional[list[TimeInterval]] = None
-    saturday: Optional[list[TimeInterval]] = None
-    sunday: Optional[list[TimeInterval]] = None
+    @field_validator("day")
+    @classmethod
+    def validate_day(cls, v):
+        if not 1 <= v <= 7:
+            raise ValueError("Day must be an integer between 1 (Monday) and 7 (Sunday)")
+        return v
 
 
 class PlaceBase(BaseModel):
@@ -52,9 +49,9 @@ class PlaceBase(BaseModel):
     longitude: Optional[float] = None
     google_maps_url: Optional[str] = None
     google_maps_place_id: Optional[str] = None
-    phone_number: Optional[str] = Field(default=None)
+    phone_number: Optional[str] = Field(default=None, examples=["1234567890"])
     website_url: Optional[str] = None
-    opening_hours: Optional[OpeningHours] = None
+    opening_hours: Optional[List[OpeningHours]] = None
     properties: Optional[Dict[str, Any]] = None
 
     @field_validator("phone_number")
