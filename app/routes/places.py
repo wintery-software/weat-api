@@ -2,8 +2,9 @@ from collections.abc import AsyncGenerator
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import async_session_maker
 from app.models.places import Place
@@ -29,7 +30,11 @@ async def list_places(db: AsyncSession = Depends(get_db)):
 async def create_place(place: PlaceCreate, db: AsyncSession = Depends(get_db)):
     new_place = Place(**place.model_dump())
     db.add(new_place)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Place already exists")
     await db.refresh(new_place)
     return new_place
 
@@ -51,7 +56,11 @@ async def update_place(
         raise HTTPException(status_code=404, detail="Place not found")
     for key, value in place_update.dict(exclude_unset=True).items():
         setattr(place, key, value)
-    await db.commit()
+    try:
+        await db.commit()
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=400, detail="Place already exists")
     await db.refresh(place)
     return place
 
