@@ -36,7 +36,7 @@ class Place(Base):
     longitude = Column(Float, nullable=True)
 
     google_maps_url = Column(String, nullable=True)
-    google_maps_place_id = Column(String, nullable=True)
+    google_maps_place_id = Column(String, nullable=True, unique=True)
 
     phone_number = Column(String, nullable=True)
     website_url = Column(String, nullable=True)
