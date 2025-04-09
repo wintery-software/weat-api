@@ -1,0 +1,1 @@
+PHONE_NUMBER_REGEX = r"^\d{10}$"
