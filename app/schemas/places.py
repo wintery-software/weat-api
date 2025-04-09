@@ -1,10 +1,8 @@
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 import re
 from typing import Optional, Dict, Any
 from uuid import UUID
-
-from pydantic import field_validator
 
 from app.constants import PHONE_NUMBER_REGEX
 
@@ -47,16 +45,17 @@ class OpeningHours(BaseModel):
 
 class PlaceBase(BaseModel):
     name: str
+    name_zh: Optional[str]
     type: str
     address: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     google_maps_url: Optional[str] = None
     google_maps_place_id: Optional[str] = None
     phone_number: Optional[str] = Field(default=None)
     website_url: Optional[str] = None
     opening_hours: Optional[OpeningHours] = None
     properties: Optional[Dict[str, Any]] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
 
     @field_validator("phone_number")
     @classmethod
@@ -76,6 +75,8 @@ class PlaceUpdate(PlaceBase):
 
 class PlaceResponse(PlaceBase):
     id: UUID
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
