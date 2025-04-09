@@ -17,13 +17,13 @@ services:
       - backend
 
   db:
-    container_name: weat-api-db
+    container_name: weat-db
     image: postgres:16
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: weat-api-db
+      POSTGRES_DB: weat-db
     volumes:
       - data:/var/lib/postgresql/data
     ports:
