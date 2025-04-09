@@ -27,7 +27,7 @@ async def list_places(db: AsyncSession = Depends(get_db)):
     "/places/", response_model=PlaceResponse, status_code=status.HTTP_201_CREATED
 )
 async def create_place(place: PlaceCreate, db: AsyncSession = Depends(get_db)):
-    new_place = Place(**place.dict())
+    new_place = Place(**place.model_dump())
     db.add(new_place)
     await db.commit()
     await db.refresh(new_place)
