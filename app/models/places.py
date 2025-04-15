@@ -1,12 +1,13 @@
 import uuid
 import datetime
 
-from sqlalchemy import String, Float, JSON, DateTime
+from sqlalchemy import Enum, String, Float, JSON, DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
 from app.db import Base
+from app.constants import PlaceType
 
 
 class Place(Base):
@@ -33,7 +34,9 @@ class Place(Base):
 
     name: Mapped[str] = mapped_column(String, nullable=False)
     name_zh: Mapped[str | None] = mapped_column(String, nullable=True)
-    type: Mapped[str] = mapped_column(String, nullable=False)
+    type: Mapped[PlaceType] = mapped_column(
+        Enum(PlaceType, name="place_type", native_enum=False), nullable=False
+    )
 
     address: Mapped[str | None] = mapped_column(String, nullable=True)
     latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
