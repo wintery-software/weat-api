@@ -4,7 +4,7 @@ import re
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 
-from app.constants import PHONE_NUMBER_REGEX
+from app.constants import PHONE_NUMBER_REGEX, PlaceType
 
 
 class OpeningHours(BaseModel):
@@ -43,7 +43,7 @@ class OpeningHours(BaseModel):
 class PlaceBase(BaseModel):
     name: str
     name_zh: Optional[str]
-    type: str
+    type: PlaceType
     address: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
