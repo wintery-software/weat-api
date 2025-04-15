@@ -1,6 +1,7 @@
 from typing import List
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,9 +41,9 @@ async def create_place(
     db.add(new_place)
     try:
         await db.commit()
-    except IntegrityError:
+    except IntegrityError as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail="Place already exists")
+        raise e
     await db.refresh(new_place)
 
     return new_place
@@ -53,13 +54,11 @@ async def create_place(
     response_model=PlaceResponse,
 )
 async def get_place(
-    place_id: str,
+    place_id: UUID,
     db: AsyncSession = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    place = await db.get(Place, place_id)
-    if not place:
-        raise HTTPException(status_code=404, detail="Place not found")
+    place = await db.get_one(Place, place_id)
 
     return place
 
@@ -69,22 +68,19 @@ async def get_place(
     response_model=PlaceResponse,
 )
 async def update_place(
-    place_id: str,
+    place_id: UUID,
     place_update: PlaceUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    place = await db.get(Place, place_id)
-    if not place:
-        raise HTTPException(status_code=404, detail="Place not found")
-
-    for key, value in place_update.dict(exclude_unset=True).items():
+    place = await db.get_one(Place, place_id)
+    for key, value in place_update.model_dump(exclude_unset=True).items():
         setattr(place, key, value)
 
     try:
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
-        raise HTTPException(status_code=400, detail="Place already exists")
+        raise e
     await db.refresh(place)
 
     return place
@@ -95,12 +91,10 @@ async def update_place(
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_place(
-    place_id: str,
+    place_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
-    place = await db.get(Place, place_id)
-    if not place:
-        raise HTTPException(status_code=404, detail="Place not found")
+    place = await db.get_one(Place, place_id)
 
     await db.delete(place)
     await db.commit()
