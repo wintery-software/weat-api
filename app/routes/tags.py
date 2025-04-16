@@ -6,8 +6,8 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.constants import Language
-from app.models.tags import Tag
+from app.constants import Language, PlaceType
+from app.models.tags import Tag, TagType
 from app.routes.helpers import get_db, get_lang
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
 
@@ -38,15 +38,17 @@ async def create_tag(
 
 
 @router.get(
-    "/tags/{tag_type_id}",
+    "/tags/{place_type}",
     response_model=List[TagResponse],
 )
 async def list_tags(
-    tag_type_id: UUID,
+    place_type: PlaceType,
     db: AsyncSession = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    result = await db.execute(select(Tag).where(Tag.tag_type_id == tag_type_id))
+    result = await db.execute(
+        select(Tag).join(TagType).where(TagType.place_type == place_type)
+    )
     return result.scalars().all()
 
 
