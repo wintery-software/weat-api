@@ -1,18 +1,40 @@
+from http import HTTPStatus
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants import Language
 from app.models.places import Place
+from app.models.tags import Tag
 from app.routes.helpers import get_db, get_lang
 from app.schemas.places import PlaceCreate, PlaceUpdate, PlaceResponse
 
 
 router = APIRouter(tags=["Places"])
+
+
+async def validate_and_set_tags(
+    db: AsyncSession,
+    place: Place,
+    tag_ids: List[UUID],
+):
+    if tag_ids is None:
+        return
+
+    result = await db.execute(select(Tag).where(Tag.id.in_(tag_ids)))
+    found_tags = result.scalars().all()
+
+    if len(found_tags) != len(set(tag_ids)):
+        raise HTTPException(
+            status_code=HTTPStatus.BAD_REQUEST,
+            detail="One or more tag IDs are invalid",
+        )
+
+    place.tags = found_tags
 
 
 @router.get(
@@ -24,7 +46,7 @@ async def list_places(
     lang: Language = Depends(get_lang),
 ):
     result = await db.execute(select(Place))
-    return result.scalars().all()
+    return result.unique().scalars().all()
 
 
 @router.post(
@@ -33,20 +55,22 @@ async def list_places(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_place(
-    place: PlaceCreate,
+    place_create: PlaceCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    new_place = Place(**place.model_dump())
+    place = Place(**place_create.model_dump(exclude={"tags"}))
+    await validate_and_set_tags(db, place, place_create.tags)
 
-    db.add(new_place)
+    db.add(place)
+
     try:
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
         raise e
-    await db.refresh(new_place)
+    await db.refresh(place)
 
-    return new_place
+    return place
 
 
 @router.get(
@@ -58,7 +82,8 @@ async def get_place(
     db: AsyncSession = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    place = await db.get_one(Place, place_id)
+    result = await db.execute(select(Place).where(Place.id == place_id))
+    place = result.unique().scalar_one()
 
     return place
 
@@ -72,15 +97,20 @@ async def update_place(
     place_update: PlaceUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    place = await db.get_one(Place, place_id)
-    for key, value in place_update.model_dump(exclude_unset=True).items():
-        setattr(place, key, value)
+    result = await db.execute(select(Place).where(Place.id == place_id))
+    place = result.unique().scalar_one()
+    place.update_from_dict(
+        **place_update.model_dump(exclude_unset=True, exclude={"tags"})
+    )
+
+    await validate_and_set_tags(db, place, place_update.tags)
 
     try:
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
         raise e
+
     await db.refresh(place)
 
     return place

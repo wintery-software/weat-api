@@ -1,36 +1,16 @@
-import uuid
-import datetime
+from typing import List
 
-from sqlalchemy import Enum, String, Float, JSON, DateTime
-from sqlalchemy.dialects.postgresql import UUID
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.sql import func
+from sqlalchemy import JSON, Enum, Float, String
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from app.db import Base
 from app.constants import PlaceType
+from app.models.associations import place_tag_association
+from app.models.base import Base
+from app.models.tags import Tag
 
 
 class Place(Base):
     __tablename__ = "places"
-
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        index=True,
-        default=uuid.uuid4,
-    )
-
-    created_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-    )
-    updated_at: Mapped[datetime.datetime] = mapped_column(
-        DateTime(timezone=True),
-        nullable=False,
-        server_default=func.now(),
-        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
-    )
 
     name: Mapped[str] = mapped_column(String, nullable=False)
     name_zh: Mapped[str | None] = mapped_column(String, nullable=True)
@@ -52,3 +32,7 @@ class Place(Base):
     opening_hours: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     properties: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+
+    tags: Mapped[List["Tag"]] = relationship(
+        secondary=place_tag_association, back_populates="places", lazy="joined"
+    )
