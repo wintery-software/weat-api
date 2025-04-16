@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -33,20 +33,20 @@ async def list_places(
     status_code=status.HTTP_201_CREATED,
 )
 async def create_place(
-    place: PlaceCreate,
+    place_create: PlaceCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    new_place = Place(**place.model_dump())
+    place = Place(**place_create.model_dump())
 
-    db.add(new_place)
+    db.add(place)
     try:
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
         raise e
-    await db.refresh(new_place)
+    await db.refresh(place)
 
-    return new_place
+    return place
 
 
 @router.get(
@@ -72,18 +72,19 @@ async def update_place(
     place_update: PlaceUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    place = await db.get_one(Place, place_id)
-    for key, value in place_update.model_dump(exclude_unset=True).items():
-        setattr(place, key, value)
+    values = place_update.model_dump(exclude_unset=True)
+    stmt = update(Place).where(Place.id == place_id).values(**values).returning(Place)
 
     try:
+        result = await db.execute(stmt)
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
         raise e
-    await db.refresh(place)
 
-    return place
+    updated = result.scalar_one()
+
+    return updated
 
 
 @router.delete(

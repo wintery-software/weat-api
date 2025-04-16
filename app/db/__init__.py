@@ -3,7 +3,7 @@ from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import declarative_base
 
 
-Base = declarative_base()
+DeclarativeBase = declarative_base()
 
 
 def get_async_engine_and_session():
