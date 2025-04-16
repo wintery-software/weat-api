@@ -58,8 +58,8 @@ async def create_place(
     place_create: PlaceCreate,
     db: AsyncSession = Depends(get_db),
 ):
-    place = Place(**place_create.model_dump(exclude={"tags"}))
-    await validate_and_set_tags(db, place, place_create.tags)
+    place = Place(**place_create.model_dump(exclude={"tag_ids"}))
+    await validate_and_set_tags(db, place, place_create.tag_ids)
 
     db.add(place)
 
@@ -100,10 +100,10 @@ async def update_place(
     result = await db.execute(select(Place).where(Place.id == place_id))
     place = result.unique().scalar_one()
     place.update_from_dict(
-        **place_update.model_dump(exclude_unset=True, exclude={"tags"})
+        **place_update.model_dump(exclude_unset=True, exclude={"tag_ids"})
     )
 
-    await validate_and_set_tags(db, place, place_update.tags)
+    await validate_and_set_tags(db, place, place_update.tag_ids)
 
     try:
         await db.commit()

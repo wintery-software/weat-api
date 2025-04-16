@@ -64,18 +64,18 @@ class PlaceBase(BaseModel):
 
 
 class PlaceCreate(PlaceBase):
-    tags: Optional[List[UUID]] = Field(default_factory=list)
+    tag_ids: Optional[List[UUID]] = Field(default_factory=list)
 
 
 class PlaceUpdate(PlaceBase):
-    tags: Optional[List[UUID]] = Field(default_factory=list)
+    tag_ids: Optional[List[UUID]] = Field(default_factory=list)
 
 
 class PlaceResponse(PlaceBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
-    tags: List[TagResponse]
+    tags: Optional[List[TagResponse]] = None
 
     class Config:
         from_attributes = True
