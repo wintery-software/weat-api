@@ -3,7 +3,7 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,6 +11,7 @@ from app.constants import Language
 from app.models.places import Place
 from app.models.tags import Tag
 from app.routes.helpers import get_db, get_lang
+from app.schemas.pagination import PaginatedResponse
 from app.schemas.places import PlaceCreate, PlaceUpdate, PlaceResponse
 
 
@@ -39,14 +40,28 @@ async def validate_and_set_tags(
 
 @router.get(
     "/places/",
-    response_model=List[PlaceResponse],
+    response_model=PaginatedResponse[PlaceResponse],
 )
 async def list_places(
+    page: int = 1,
+    page_size: int = 10,
     db: AsyncSession = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    result = await db.execute(select(Place))
-    return result.unique().scalars().all()
+    offset = (page - 1) * page_size
+    stmt = select(Place).offset(offset).limit(page_size)
+    result = await db.execute(stmt)
+    items = result.unique().scalars().all()
+
+    total_result = await db.execute(select(func.count()).select_from(Place))
+    total = total_result.scalar()
+
+    return PaginatedResponse[PlaceResponse](
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
 
 
 @router.post(
