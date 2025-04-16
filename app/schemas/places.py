@@ -5,6 +5,7 @@ from typing import List, Optional, Dict, Any
 from uuid import UUID
 
 from app.constants import PHONE_NUMBER_REGEX, PlaceType
+from app.schemas.tags import TagResponse
 
 
 class OpeningHours(BaseModel):
@@ -63,17 +64,18 @@ class PlaceBase(BaseModel):
 
 
 class PlaceCreate(PlaceBase):
-    pass
+    tags: Optional[List[UUID]] = Field(default_factory=list)
 
 
 class PlaceUpdate(PlaceBase):
-    pass
+    tags: Optional[List[UUID]] = Field(default_factory=list)
 
 
 class PlaceResponse(PlaceBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
+    tags: List[TagResponse]
 
     class Config:
         from_attributes = True

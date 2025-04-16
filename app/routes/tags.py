@@ -2,7 +2,7 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import select, update
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -59,21 +59,18 @@ async def update_tag(
     tag_update: TagUpdate,
     db: AsyncSession = Depends(get_db),
 ):
-    values = tag_update.model_dump(exclude_unset=True)
-    stmt = update(Tag).where(Tag.id == tag_id).values(**values)
+    result = await db.execute(select(Tag).where(Tag.id == tag_id))
+    tag = result.scalar_one()
+    tag.update_from_dict(**tag_update.model_dump(exclude_unset=True))
 
     try:
-        result = await db.execute(stmt)
         await db.commit()
     except IntegrityError as e:
         await db.rollback()
         raise e
+    db.refresh(tag)
 
-    stmt = select(Tag).where(Tag.id == tag_id)
-    result = await db.execute(stmt)
-    updated = result.scalar_one()
-
-    return updated
+    return tag
 
 
 @router.delete(

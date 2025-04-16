@@ -34,5 +34,5 @@ class Place(Base):
     properties: Mapped[dict | None] = mapped_column(JSON, nullable=True)
 
     tags: Mapped[List["Tag"]] = relationship(
-        secondary=place_tag_association, back_populates="places"
+        secondary=place_tag_association, back_populates="places", lazy="joined"
     )

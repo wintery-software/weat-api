@@ -30,3 +30,7 @@ class Base(DeclarativeBase):
         server_default=func.now(),
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
+
+    def update_from_dict(self, **values):
+        for key, value in values.items():
+            setattr(self, key, value)
