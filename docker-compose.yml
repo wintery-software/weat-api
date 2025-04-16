@@ -1,5 +1,3 @@
-version: "3.13"
-
 services:
   app:
     container_name: weat-api-app
