@@ -1,11 +1,10 @@
 from http import HTTPStatus
 from fastapi import FastAPI, HTTPException, Request
 
-from sqlalchemy.exc import IntegrityError, NoResultFound
-
 from app.routes.places import router as places_router
 from app.routes.tags import router as tags_router
 from app.routes.tag_types import router as tag_types_router
+from app.services.errors import CustomError
 
 
 app = FastAPI(docs_url="/")
@@ -14,18 +13,9 @@ app.include_router(tags_router)
 app.include_router(tag_types_router)
 
 
-@app.exception_handler(IntegrityError)
-async def handle_integrity_error(request: Request, exc: IntegrityError):
-    detail = str(exc.orig).split("\n")[0]
+@app.exception_handler(CustomError)
+async def handle_custom_error(request: Request, exc: Exception):
     raise HTTPException(
         status_code=HTTPStatus.BAD_REQUEST,
-        detail=f"Object already exists: {detail}",
-    )
-
-
-@app.exception_handler(NoResultFound)
-async def handle_no_result_round_error(request: Request, exc: NoResultFound):
-    raise HTTPException(
-        status_code=HTTPStatus.NOT_FOUND,
-        detail=f"Object not found",
+        detail=str(exc),
     )
