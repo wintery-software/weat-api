@@ -16,9 +16,6 @@ from app.services.errors import (
 
 
 def _validate_tags(tags: List[Tag], tag_ids: List[UUID]):
-    print("validate")
-    print(tags)
-    print(tag_ids)
     if len(set(tags)) != len(set(tag_ids)):
         raise InvalidTagIdError()
 

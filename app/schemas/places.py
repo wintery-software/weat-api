@@ -1,11 +1,23 @@
 from datetime import datetime
 from pydantic import BaseModel, Field, field_validator
 import re
-from typing import List, Optional, Dict, Any
+from typing import Any
 from uuid import UUID
 
 from app.constants import PHONE_NUMBER_REGEX, PlaceType
 from app.schemas.tags import TagResponse
+
+
+class Location(BaseModel):
+    latitude: float = Field(examples=[37.7749])
+    longitude: float = Field(examples=[-122.4194])
+
+    @field_validator("latitude", "longitude")
+    @classmethod
+    def validate_coordinates(cls, v):
+        if not (-90 <= v <= 90):
+            raise ValueError("Latitude must be between -90 and 90 degrees")
+        return v
 
 
 class OpeningHours(BaseModel):
@@ -43,17 +55,15 @@ class OpeningHours(BaseModel):
 
 class PlaceBase(BaseModel):
     name: str
-    name_zh: Optional[str] = None
+    name_zh: str | None = None
     type: PlaceType
-    address: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-    google_maps_url: Optional[str] = None
-    google_maps_place_id: Optional[str] = None
-    phone_number: Optional[str] = Field(default=None, examples=["1234567890"])
-    website_url: Optional[str] = None
-    opening_hours: Optional[List[OpeningHours]] = None
-    properties: Optional[Dict[str, Any]] = None
+    address: str | None = None
+    google_maps_url: str | None = None
+    google_maps_place_id: str | None = None
+    phone_number: str | None = Field(default=None, examples=["1234567890"])
+    website_url: str | None = None
+    opening_hours: list[OpeningHours] = Field(default_factory=list)
+    properties: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("phone_number")
     @classmethod
@@ -64,21 +74,26 @@ class PlaceBase(BaseModel):
 
 
 class PlaceCreate(PlaceBase):
-    tag_ids: Optional[List[UUID]] = Field(default_factory=list)
+    latitude: float | None = Field(default=None, examples=[37.7749])
+    longitude: float | None = Field(default=None, examples=[-122.4194])
+    tag_ids: list[UUID] = Field(default_factory=list)
 
 
 class PlaceUpdate(PlaceBase):
-    name: Optional[str] = None
-    name_zh: Optional[str] = None
-    type: Optional[PlaceType] = None
-    tag_ids: Optional[List[UUID]] = Field(default_factory=list)
+    name: str | None = None
+    name_zh: str | None = None
+    type: PlaceType | None = None
+    latitude: float | None = Field(default=None, examples=[37.7749])
+    longitude: float | None = Field(default=None, examples=[-122.4194])
+    tag_ids: list[UUID] = Field(default_factory=list)
 
 
 class PlaceResponse(PlaceBase):
     id: UUID
     created_at: datetime
     updated_at: datetime
-    tags: Optional[List[TagResponse]] = None
+    location: Location | None = None
+    tags: list[TagResponse] = Field(default_factory=list)
 
     class Config:
         from_attributes = True

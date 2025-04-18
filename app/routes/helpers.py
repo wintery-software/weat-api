@@ -1,4 +1,4 @@
-from typing import AsyncIterator, Optional
+from typing import AsyncIterator
 
 from fastapi import Header, Query
 
@@ -13,8 +13,8 @@ async def get_db() -> AsyncIterator[DBUnitOfWork]:
 
 
 async def get_lang(
-    lang: Optional[str] = Query(None),
-    accept_language: Optional[str] = Header(None, alias="Accept-Language"),
+    lang: str | None = Query(None),
+    accept_language: str | None = Header(None, alias="Accept-Language"),
 ) -> Language:
     resolved = "en-US"
 
