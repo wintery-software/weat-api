@@ -8,7 +8,11 @@ import pytest
 import pytest_asyncio
 
 from app.main import app
-from app.schemas.places import PlaceCreate, PlaceResponse, PlaceUpdate
+from app.schemas.places import (
+    PlaceCreate,
+    PlaceResponse,
+    PlaceUpdate,
+)
 import app.services.places as places_service
 
 

@@ -82,3 +82,15 @@ class PlaceResponse(PlaceBase):
 
     class Config:
         from_attributes = True
+
+
+class MinimumPlaceResponse(BaseModel):
+    id: UUID
+    name: str
+    name_zh: Optional[str] = None
+    type: PlaceType
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+
+    class Config:
+        from_attributes = True
