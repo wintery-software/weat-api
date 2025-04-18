@@ -43,7 +43,7 @@ class OpeningHours(BaseModel):
 
 class PlaceBase(BaseModel):
     name: str
-    name_zh: Optional[str]
+    name_zh: Optional[str] = None
     type: PlaceType
     address: Optional[str] = None
     latitude: Optional[float] = None
@@ -68,6 +68,9 @@ class PlaceCreate(PlaceBase):
 
 
 class PlaceUpdate(PlaceBase):
+    name: Optional[str] = None
+    name_zh: Optional[str] = None
+    type: Optional[PlaceType] = None
     tag_ids: Optional[List[UUID]] = Field(default_factory=list)
 
 

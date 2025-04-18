@@ -1,6 +1,7 @@
 import uuid
 import datetime
 
+from pydantic import BaseModel
 from sqlalchemy import DateTime
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
@@ -31,6 +32,6 @@ class Base(DeclarativeBase):
         onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
     )
 
-    def update_from_dict(self, **values):
-        for key, value in values.items():
+    def update(self, data: BaseModel):
+        for key, value in data.model_dump(exclude_unset=True).items():
             setattr(self, key, value)

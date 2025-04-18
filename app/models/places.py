@@ -7,6 +7,7 @@ from app.constants import PlaceType
 from app.models.associations import place_tag_association
 from app.models.base import Base
 from app.models.tags import Tag
+from app.schemas.places import PlaceUpdate
 
 
 class Place(Base):
@@ -36,3 +37,9 @@ class Place(Base):
     tags: Mapped[List["Tag"]] = relationship(
         secondary=place_tag_association, back_populates="places", lazy="joined"
     )
+
+    def update(self, data: PlaceUpdate):
+        for key, value in data.model_dump(
+            exclude_unset=True, exclude={"tag_ids"}
+        ).items():
+            setattr(self, key, value)

@@ -2,15 +2,12 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants import Language, PlaceType
-from app.models.tags import Tag, TagType
+from app.models.uow import DBUnitOfWork
 from app.routes.helpers import get_db, get_lang
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
-
+import app.services.tags as tags_service
 
 router = APIRouter(tags=["Tags"])
 
@@ -22,19 +19,12 @@ router = APIRouter(tags=["Tags"])
 )
 async def create_tag(
     tag_create: TagCreate,
-    db: AsyncSession = Depends(get_db),
+    db: DBUnitOfWork = Depends(get_db),
 ):
-    tag = Tag(**tag_create.model_dump())
-
-    db.add(tag)
-    try:
-        await db.commit()
-    except IntegrityError as e:
-        await db.rollback()
-        raise e
-    await db.refresh(tag)
-
-    return tag
+    return await tags_service.create_tag(
+        db=db,
+        tag_create=tag_create,
+    )
 
 
 @router.get(
@@ -43,36 +33,30 @@ async def create_tag(
 )
 async def list_tags(
     place_type: PlaceType,
-    db: AsyncSession = Depends(get_db),
+    db: DBUnitOfWork = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    result = await db.execute(
-        select(Tag).join(TagType).where(TagType.place_type == place_type)
+    return await tags_service.list_tags(
+        db=db,
+        place_type=place_type,
     )
-    return result.scalars().all()
 
 
 @router.put(
     "/tags/{tag_id}",
     response_model=TagResponse,
+    response_model_exclude_unset=True,
 )
 async def update_tag(
     tag_id: UUID,
     tag_update: TagUpdate,
-    db: AsyncSession = Depends(get_db),
+    db: DBUnitOfWork = Depends(get_db),
 ):
-    result = await db.execute(select(Tag).where(Tag.id == tag_id))
-    tag = result.scalar_one()
-    tag.update_from_dict(**tag_update.model_dump(exclude_unset=True))
-
-    try:
-        await db.commit()
-    except IntegrityError as e:
-        await db.rollback()
-        raise e
-    db.refresh(tag)
-
-    return tag
+    return await tags_service.update_tag(
+        db=db,
+        tag_id=tag_id,
+        tag_update=tag_update,
+    )
 
 
 @router.delete(
@@ -81,9 +65,11 @@ async def update_tag(
 )
 async def delete_tag(
     tag_id: UUID,
-    db: AsyncSession = Depends(get_db),
+    db: DBUnitOfWork = Depends(get_db),
 ):
-    tag = await db.get_one(Tag, tag_id)
+    await tags_service.delete_tag(
+        db=db,
+        tag_id=tag_id,
+    )
 
-    await db.delete(tag)
-    await db.commit()
+    return None

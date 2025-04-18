@@ -1,16 +1,15 @@
-from collections.abc import AsyncGenerator
-from typing import Optional
+from typing import AsyncIterator, Optional
 
 from fastapi import Header, Query
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.constants import Language
 from app.db import async_session_maker
+from app.models.uow import DBUnitOfWork
 
 
-async def get_db() -> AsyncGenerator[AsyncSession, None]:
-    async with async_session_maker() as session:
-        yield session
+async def get_db() -> AsyncIterator[DBUnitOfWork]:
+    async with DBUnitOfWork(async_session_maker) as uow:
+        yield uow
 
 
 async def get_lang(
