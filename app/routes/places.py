@@ -49,7 +49,7 @@ async def search_places(
     db: AsyncSession = Depends(get_db),
     lang: Language = Depends(get_lang),
 ):
-    items, total = await places_service.search_places(
+    items, total = await places_service.search_paginated_places(
         db=db,
         q=q,
         page=page,

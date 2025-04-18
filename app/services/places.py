@@ -57,7 +57,7 @@ async def list_paginated_places(
     return items, total
 
 
-async def search_places(
+async def search_paginated_places(
     db: DBUnitOfWork,
     q: str = None,
     page: int = 1,
