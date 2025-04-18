@@ -215,10 +215,10 @@ async def test_search_places(mock_place):
     stmt_passed = db.get_all.call_args.args[0]
 
     compiled_sql = str(stmt_passed.compile(compile_kwargs={"literal_binds": True}))
-    assert f"%{q}%" in compiled_sql
-    assert "lower(places.name) LIKE lower(" in compiled_sql
-    assert "lower(places.name_zh) LIKE lower(" in compiled_sql
-    assert "lower(tags.name) LIKE lower(" in compiled_sql
+    assert f"{q}" in compiled_sql
+    assert "places.name %" in compiled_sql
+    assert "places.name_zh %" in compiled_sql
+    assert "places.address %" in compiled_sql
 
 
 @pytest.mark.asyncio
