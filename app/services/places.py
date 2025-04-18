@@ -16,9 +16,6 @@ from app.services.errors import (
 
 
 def _validate_tags(tags: List[Tag], tag_ids: List[UUID]):
-    print("validate")
-    print(tags)
-    print(tag_ids)
     if len(set(tags)) != len(set(tag_ids)):
         raise InvalidTagIdError()
 
@@ -57,7 +54,25 @@ async def list_paginated_places(
 
     items = [PlaceResponse.model_validate(item) if item else None for item in items]
 
-    print(total)
+    return items, total
+
+
+async def search_paginated_places(
+    db: DBUnitOfWork,
+    q: str = None,
+    page: int = 1,
+    page_size: int = 10,
+) -> tuple[List[PlaceResponse], int]:
+    stmt = select(Place).join(Place.tags, isouter=True)
+    if q:
+        stmt = stmt.where(
+            Place.name.ilike(f"%{q}%")
+            | Place.name_zh.ilike(f"%{q}%")
+            | Tag.name.ilike(f"%{q}%")
+        )
+    items, total = await paginate(db, stmt, page, page_size)
+
+    items = [PlaceResponse.model_validate(item) if item else None for item in items]
 
     return items, total
 

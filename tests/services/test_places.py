@@ -12,6 +12,8 @@ from app.services.places import (
     _get_tags_by_ids,
     create_place,
     get_place,
+    list_paginated_places,
+    search_paginated_places,
     update_place,
     delete_place,
     _validate_tags,
@@ -134,32 +136,6 @@ async def test_create_place_integrity_error():
 
 
 @pytest.mark.asyncio
-async def test_create_place_integrity_error():
-    db = MockDBUoW()
-    db.get_all.return_value = []
-    db.commit.side_effect = IntegrityError("stmt", {}, Exception())
-
-    data = PlaceCreate(
-        name="Test",
-        name_zh=None,
-        type="food",
-        address=None,
-        latitude=None,
-        longitude=None,
-        google_maps_url=None,
-        google_maps_place_id=None,
-        phone_number=None,
-        website_url=None,
-        opening_hours=[],
-        properties={},
-        tag_ids=[],
-    )
-
-    with pytest.raises(DBValidationError):
-        await create_place(db, data)
-
-
-@pytest.mark.asyncio
 async def test_get_place_success(mock_place):
     db = MockDBUoW()
     db.get_by_id.return_value = mock_place
@@ -201,3 +177,65 @@ async def test_delete_place(mock_place):
     await delete_place(db, mock_place.id)
     db.delete.assert_awaited_with(mock_place)
     db.commit.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_list_places(mock_place):
+    db = MockDBUoW()
+    db.get_all.return_value = [mock_place]
+
+    mock_count_result = MagicMock()
+    mock_count_result.scalar.return_value = 123
+    db.execute.return_value = mock_count_result
+
+    items, total = await list_paginated_places(db, page=1, page_size=10)
+    assert len(items) == 1
+    assert isinstance(items[0], PlaceResponse)
+    assert total == 123
+
+
+@pytest.mark.asyncio
+async def test_search_places(mock_place):
+    db = MockDBUoW()
+    db.get_all.return_value = [mock_place]
+
+    mock_count_result = MagicMock()
+    mock_count_result.scalar.return_value = 123
+    db.execute.return_value = mock_count_result
+
+    q = "Test Query"
+    items, total = await search_paginated_places(db, q=q, page=1, page_size=10)
+    assert len(items) == 1
+    assert isinstance(items[0], PlaceResponse)
+    assert total == 123
+
+    # Check if the query contains the search term
+    stmt_passed = db.get_all.call_args.args[0]
+
+    compiled_sql = str(stmt_passed.compile(compile_kwargs={"literal_binds": True}))
+    assert f"%{q}%" in compiled_sql
+    assert "lower(places.name) LIKE lower(" in compiled_sql
+    assert "lower(places.name_zh) LIKE lower(" in compiled_sql
+    assert "lower(tags.name) LIKE lower(" in compiled_sql
+
+
+@pytest.mark.asyncio
+async def test_search_places_no_query(mock_place):
+    db = MockDBUoW()
+    db.get_all.return_value = [mock_place]
+
+    mock_count_result = MagicMock()
+    mock_count_result.scalar.return_value = 123
+    db.execute.return_value = mock_count_result
+
+    q = None
+    items, total = await search_paginated_places(db, q=q, page=1, page_size=10)
+    assert len(items) == 1
+    assert isinstance(items[0], PlaceResponse)
+    assert total == 123
+
+    # Check if the query does not contain the search term
+    stmt_passed = db.get_all.call_args.args[0]
+
+    compiled_sql = str(stmt_passed.compile(compile_kwargs={"literal_binds": True}))
+    assert "LIKE" not in compiled_sql
