@@ -12,11 +12,18 @@ class Location(BaseModel):
     latitude: float = Field(examples=[37.7749])
     longitude: float = Field(examples=[-122.4194])
 
-    @field_validator("latitude", "longitude")
+    @field_validator("latitude")
     @classmethod
-    def validate_coordinates(cls, v):
+    def validate_latitude(cls, v):
         if not (-90 <= v <= 90):
             raise ValueError("Latitude must be between -90 and 90 degrees")
+        return v
+
+    @field_validator("longitude")
+    @classmethod
+    def validate_longitude(cls, v):
+        if not (-180 <= v <= 180):
+            raise ValueError("Longitude must be between -180 and 180 degrees")
         return v
 
 
@@ -102,10 +109,9 @@ class PlaceResponse(PlaceBase):
 class MinimumPlaceResponse(BaseModel):
     id: UUID
     name: str
-    name_zh: Optional[str] = None
+    name_zh: str | None = None
     type: PlaceType
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    location: Location | None = None
 
     class Config:
         from_attributes = True
