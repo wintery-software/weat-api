@@ -1,4 +1,4 @@
-from sqlalchemy import JSON, Enum, Float, String
+from sqlalchemy import JSON, Enum, Float, Index, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.constants import PlaceType
@@ -34,6 +34,27 @@ class Place(Base):
 
     tags: Mapped[list["Tag"]] = relationship(
         secondary=place_tag_association, back_populates="places", lazy="joined"
+    )
+
+    __table_args__ = (
+        Index(
+            "idx_places_name_trgm",
+            "name",
+            postgresql_using="gin",
+            postgresql_ops={"name": "gin_trgm_ops"},
+        ),
+        Index(
+            "idx_places_name_zh_trgm",
+            "name_zh",
+            postgresql_using="gin",
+            postgresql_ops={"name_zh": "gin_trgm_ops"},
+        ),
+        Index(
+            "idx_places_address_trgm",
+            "address",
+            postgresql_using="gin",
+            postgresql_ops={"address": "gin_trgm_ops"},
+        ),
     )
 
     @property

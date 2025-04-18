@@ -1,6 +1,6 @@
 from typing import List
 from uuid import UUID
-from sqlalchemy import select
+from sqlalchemy import func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.models.places import Place
@@ -66,9 +66,18 @@ async def search_paginated_places(
     stmt = select(Place).join(Place.tags, isouter=True)
     if q:
         stmt = stmt.where(
-            Place.name.ilike(f"%{q}%")
-            | Place.name_zh.ilike(f"%{q}%")
-            | Tag.name.ilike(f"%{q}%")
+            or_(
+                func.similarity(Place.name, q) > 0.1,
+                func.similarity(Place.name_zh, q) > 0.1,
+                func.similarity(Place.address, q) > 0.1,
+            )
+        )
+        stmt = stmt.order_by(
+            (
+                func.similarity(Place.name, q) * 2
+                + func.similarity(Place.name_zh, q) * 1.5
+                + func.similarity(Place.address, q)
+            ).desc()
         )
     items, total = await paginate(db, stmt, page, page_size)
 
