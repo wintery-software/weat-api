@@ -32,6 +32,8 @@ def mock_place() -> Place:
         id=uuid4(),
         name="Test Place",
         type="food",
+        opening_hours=[],
+        properties={},
         created_at=datetime.datetime.now(datetime.timezone.utc),
         updated_at=datetime.datetime.now(datetime.timezone.utc),
     )
