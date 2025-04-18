@@ -1,4 +1,4 @@
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 
 from app.models.uow import DBUnitOfWork
 
@@ -13,3 +13,7 @@ async def paginate(db: DBUnitOfWork, stmt, page: int, page_size: int):
     total = count_result.scalar()
 
     return items, total
+
+
+async def with_similarity_threshold(db: DBUnitOfWork, threshold: float = 0.3):
+    await db.execute(text(f"SET pg_trgm.similarity_threshold = {threshold}"))

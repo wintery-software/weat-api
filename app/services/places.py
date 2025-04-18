@@ -1,13 +1,14 @@
 from typing import List
 from uuid import UUID
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 
+from app.constants import SIMILARITY_THRESHOLD
 from app.models.places import Place
 from app.models.tags import Tag
 from app.models.uow import DBUnitOfWork
 from app.schemas.places import PlaceCreate, PlaceResponse, PlaceUpdate
-from app.services.common import paginate
+from app.services.common import paginate, with_similarity_threshold
 from app.services.errors import (
     DBObjectNotFoundError,
     DBValidationError,
@@ -63,13 +64,19 @@ async def search_paginated_places(
     page: int = 1,
     page_size: int = 10,
 ) -> tuple[List[PlaceResponse], int]:
+    await with_similarity_threshold(db, SIMILARITY_THRESHOLD)
+
     stmt = select(Place).join(Place.tags, isouter=True)
     if q:
         stmt = stmt.where(
-            Place.name.ilike(f"%{q}%")
-            | Place.name_zh.ilike(f"%{q}%")
-            | Tag.name.ilike(f"%{q}%")
+            or_(
+                Place.name.op("%")(q),
+                Place.name_zh.op("%")(q),
+                Place.address.op("%")(q),
+            )
         )
+        stmt = stmt.order_by(Place.name.op("<->")(q))
+
     items, total = await paginate(db, stmt, page, page_size)
 
     items = [PlaceResponse.model_validate(item) if item else None for item in items]
