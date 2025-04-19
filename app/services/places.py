@@ -1,9 +1,9 @@
 from typing import List
 from uuid import UUID
-from sqlalchemy import or_, select
+from sqlalchemy import Float, cast, or_, select
 from sqlalchemy.exc import IntegrityError
 
-from app.constants import SIMILARITY_THRESHOLD
+from app.constants import PLACE_SEARCH_SIMILARITY_THRESHOLD
 from app.models.places import Place
 from app.models.tags import Tag
 from app.models.uow import DBUnitOfWork
@@ -64,7 +64,7 @@ async def search_paginated_places(
     page: int = 1,
     page_size: int = 10,
 ) -> tuple[List[PlaceResponse], int]:
-    await with_similarity_threshold(db, SIMILARITY_THRESHOLD)
+    await with_similarity_threshold(db, PLACE_SEARCH_SIMILARITY_THRESHOLD)
 
     stmt = select(Place).join(Place.tags, isouter=True)
     if q:
@@ -75,8 +75,13 @@ async def search_paginated_places(
                 Place.address.op("%")(q),
             )
         )
-        stmt = stmt.order_by(Place.name.op("<->")(q))
-
+        stmt = stmt.order_by(
+            (
+                cast(Place.name.op("<->")(q), Float)
+                + cast(Place.name_zh.op("<->")(q), Float) * 1.5
+                + cast(Place.address.op("<->")(q), Float) * 2
+            )
+        )
     items, total = await paginate(db, stmt, page, page_size)
 
     items = [PlaceResponse.model_validate(item) if item else None for item in items]
