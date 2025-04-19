@@ -81,8 +81,7 @@ class PlaceBase(BaseModel):
 
 
 class PlaceCreate(PlaceBase):
-    latitude: float | None = Field(default=None, examples=[37.7749])
-    longitude: float | None = Field(default=None, examples=[-122.4194])
+    location: Location | None = None
     tag_ids: list[UUID] = Field(default_factory=list)
 
 
@@ -90,8 +89,7 @@ class PlaceUpdate(PlaceBase):
     name: str | None = None
     name_zh: str | None = None
     type: PlaceType | None = None
-    latitude: float | None = Field(default=None, examples=[37.7749])
-    longitude: float | None = Field(default=None, examples=[-122.4194])
+    location: Location | None = None
     tag_ids: list[UUID] = Field(default_factory=list)
 
 
@@ -106,7 +104,7 @@ class PlaceResponse(PlaceBase):
         from_attributes = True
 
 
-class MinimumPlaceResponse(BaseModel):
+class SimplePlaceResponse(BaseModel):
     id: UUID
     name: str
     name_zh: str | None = None

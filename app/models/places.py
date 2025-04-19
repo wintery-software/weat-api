@@ -1,4 +1,6 @@
-from sqlalchemy import JSON, Enum, Float, Index, String
+from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
+from sqlalchemy import JSON, Enum, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.constants import PlaceType
@@ -18,9 +20,10 @@ class Place(Base):
     )
 
     address: Mapped[str | None] = mapped_column(String, nullable=True)
-    latitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-    longitude: Mapped[float | None] = mapped_column(Float, nullable=True)
-
+    location_geom: Mapped[str] = mapped_column(
+        Geometry(geometry_type="POINT", srid=4326),
+        nullable=True,
+    )
     google_maps_url: Mapped[str | None] = mapped_column(String, nullable=True)
     google_maps_place_id: Mapped[str | None] = mapped_column(
         String, nullable=True, unique=True
@@ -55,14 +58,32 @@ class Place(Base):
             postgresql_using="gin",
             postgresql_ops={"address": "gin_trgm_ops"},
         ),
+        Index(
+            "idx_places_location_geom",
+            "location_geom",
+            postgresql_using="gist",
+        ),
     )
 
     @property
     def location(self) -> dict[str, float] | None:
-        if self.latitude is None or self.longitude is None:
+        if self.location_geom is None:
             return None
+
+        point = to_shape(self.location_geom)  # works for WKTElement and WKBElement
+        return {
+            "latitude": point.y,
+            "longitude": point.x,
+        }
+
+    @location.setter
+    def location(self, value: dict[str, float] | None):
+        if value is None:
+            self.location_geom = None
         else:
-            return {"latitude": self.latitude, "longitude": self.longitude}
+            self.location_geom = func.ST_SetSRID(
+                func.ST_MakePoint(value["longitude"], value["latitude"]), 4326
+            )
 
     def update(self, data: PlaceUpdate):
         for key, value in data.model_dump(
