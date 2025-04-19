@@ -1,4 +1,5 @@
 from geoalchemy2 import Geometry
+from geoalchemy2.shape import to_shape
 from sqlalchemy import JSON, Enum, Index, String, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -68,11 +69,12 @@ class Place(Base):
     def location(self) -> dict[str, float] | None:
         if self.location_geom is None:
             return None
-        else:
-            return {
-                "latitude": self.location_geom.y,
-                "longitude": self.location_geom.x,
-            }
+
+        point = to_shape(self.location_geom)  # works for WKTElement and WKBElement
+        return {
+            "latitude": point.y,
+            "longitude": point.x,
+        }
 
     @location.setter
     def location(self, value: dict[str, float] | None):

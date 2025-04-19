@@ -2,14 +2,14 @@ import datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
+from geoalchemy2 import WKTElement
 import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.models.places import Place
 from app.models.tags import Tag, TagType
-from app.schemas.places import PlaceCreate, PlaceUpdate, PlaceResponse
+from app.schemas.places import Location, PlaceCreate, PlaceUpdate, PlaceResponse
 from app.services.places import (
-    _get_place_by_id,
     create_place,
     get_place,
     list_paginated_places,
@@ -31,6 +31,7 @@ def mock_place() -> Place:
         id=uuid4(),
         name="Test Place",
         type="food",
+        location_geom=WKTElement("POINT(1.0 2.0)", srid=4326),
         opening_hours=[],
         properties={},
         created_at=datetime.datetime.now(datetime.timezone.utc),
@@ -60,8 +61,9 @@ async def test_get_place(mock_place):
     db.get_by_id.return_value = mock_place
 
     place_id = mock_place.id
-    response = await _get_place_by_id(db, place_id)
-    assert isinstance(response, Place)
+    response = await get_place(db, place_id)
+    assert isinstance(response, PlaceResponse)
+    assert isinstance(response.location, Location)
     db.get_by_id.assert_awaited_with(Place, place_id)
 
 
@@ -251,7 +253,6 @@ async def test_list_places_with_valid_bounds(mock_place):
     stmt_passed = db.get_all.call_args.args[0]
 
     compiled_sql = str(stmt_passed.compile(compile_kwargs={"literal_binds": True}))
-    print(compiled_sql)
     assert (
         f"places.location_geom && ST_MakeEnvelope({sw_lng}, {sw_lat}, {ne_lng}, {ne_lat}, 4326)"
         in compiled_sql

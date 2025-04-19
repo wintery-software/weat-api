@@ -104,7 +104,7 @@ class PlaceResponse(PlaceBase):
         from_attributes = True
 
 
-class MinimumPlaceResponse(BaseModel):
+class SimplePlaceResponse(BaseModel):
     id: UUID
     name: str
     name_zh: str | None = None
