@@ -1,6 +1,6 @@
 from typing import List
 from uuid import UUID
-from sqlalchemy import Float, cast, or_, select
+from sqlalchemy import Float, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.constants import PLACE_SEARCH_SIMILARITY_THRESHOLD
@@ -19,6 +19,22 @@ from app.services.errors import (
 def _validate_tags(tags: List[Tag], tag_ids: List[UUID]):
     if len(set(tags)) != len(set(tag_ids)):
         raise InvalidTagIdError()
+
+
+def _validate_bounds(
+    sw_lat: float,
+    sw_lng: float,
+    ne_lat: float,
+    ne_lng: float,
+) -> None:
+    if sw_lat > ne_lat or sw_lng > ne_lng:
+        raise ValueError(
+            "Invalid bounds: sw_lat should be less than ne_lat and sw_lng should be less than ne_lng"
+        )
+    if sw_lat < -90 or ne_lat > 90:
+        raise ValueError("Invalid latitude values: should be between -90 and 90")
+    if sw_lng < -180 or ne_lng > 180:
+        raise ValueError("Invalid longitude values: should be between -180 and 180")
 
 
 async def _get_place_by_id(db: DBUnitOfWork, place_id: UUID) -> Place:
@@ -47,10 +63,20 @@ async def _assign_tags_to_place(
 
 async def list_paginated_places(
     db: DBUnitOfWork,
+    sw_lat: float = -90,
+    sw_lng: float = -180,
+    ne_lat: float = 90,
+    ne_lng: float = 180,
     page: int = 1,
     page_size: int = 10,
 ) -> tuple[List[PlaceResponse], int]:
-    stmt = select(Place)
+    _validate_bounds(sw_lat, sw_lng, ne_lat, ne_lng)
+
+    stmt = select(Place).where(
+        Place.location_geom.op("&&")(
+            func.ST_MakeEnvelope(sw_lng, sw_lat, ne_lng, ne_lat, 4326)
+        )
+    )
     items, total = await paginate(db, stmt, page, page_size)
 
     items = [PlaceResponse.model_validate(item) if item else None for item in items]
@@ -91,7 +117,7 @@ async def search_paginated_places(
 
 async def create_place(db: DBUnitOfWork, place_create: PlaceCreate) -> PlaceResponse:
     place = Place(**place_create.model_dump(exclude={"tag_ids"}))
-    _assign_tags_to_place(db, place, place_create.tag_ids)
+    await _assign_tags_to_place(db, place, place_create.tag_ids)
     await db.add(place)
 
     try:
