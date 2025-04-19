@@ -7,7 +7,7 @@ from app.constants import Language
 from app.routes.helpers import get_db, get_lang
 from app.schemas.pagination import PaginatedResponse
 from app.schemas.places import (
-    MinimumPlaceResponse,
+    SimplePlaceResponse,
     PlaceCreate,
     PlaceUpdate,
     PlaceResponse,
@@ -19,7 +19,7 @@ router = APIRouter(tags=["Places"])
 
 @router.get(
     "/places/",
-    response_model=PaginatedResponse[MinimumPlaceResponse],
+    response_model=PaginatedResponse[SimplePlaceResponse],
 )
 async def list_places(
     sw_lat: float = -90,
@@ -41,7 +41,7 @@ async def list_places(
         page_size=page_size,
     )
 
-    return PaginatedResponse[MinimumPlaceResponse](
+    return PaginatedResponse[SimplePlaceResponse](
         items=items, total=total, page=page, page_size=page_size
     )
 
