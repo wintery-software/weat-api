@@ -14,7 +14,7 @@ DRINKS_FILE_PATH = "scripts/data/places_metadata - drinks.csv"
 
 
 def add_places(file_path: str, type: str) -> None:
-    file = open(file_path, mode="r", encoding="utf-8")
+    file = open(file_path, encoding="utf-8")
     if not file:
         print(f"Error reading the file {file_path}")
 

@@ -1,26 +1,26 @@
-import sys
-import os
-
-sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
-
 from dotenv import load_dotenv
-
-load_dotenv()
+import os
+import sys
 
 from logging.config import fileConfig
 
+from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from alembic import context
+from app.db import DeclarativeBase
+from app.models import *  # noqa: F403
+
+
+# Load environment variables
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
+load_dotenv()
+
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
 
-# Import declarative_base and all models
-from app.db import DeclarativeBase
-from app.models import *
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
