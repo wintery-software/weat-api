@@ -2,7 +2,7 @@ import uuid
 import datetime
 
 from pydantic import BaseModel
-from sqlalchemy import DateTime
+from sqlalchemy import DateTime, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
@@ -18,6 +18,7 @@ class Base(DeclarativeBase):
         primary_key=True,
         index=True,
         default=uuid.uuid4,
+        server_default=text("gen_random_uuid()"),
     )
 
     created_at: Mapped[datetime.datetime] = mapped_column(
