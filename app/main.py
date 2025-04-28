@@ -1,15 +1,24 @@
+from contextlib import asynccontextmanager
 from http import HTTPStatus
 import os
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.db import init_async_engine_and_session
 from app.routes.places import router as places_router
 from app.routes.tags import router as tags_router
 from app.routes.tag_types import router as tag_types_router
 from app.services.errors import CustomError
 
 
-app = FastAPI(docs_url="/")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    init_async_engine_and_session()
+
+    yield
+
+
+app = FastAPI(docs_url="/", lifespan=lifespan)
 app.include_router(places_router)
 app.include_router(tags_router)
 app.include_router(tag_types_router)

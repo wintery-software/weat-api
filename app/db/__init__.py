@@ -6,6 +6,10 @@ from sqlalchemy.orm import declarative_base
 DeclarativeBase = declarative_base()
 
 
+engine = None
+async_session_maker = None
+
+
 def get_async_engine_and_session():
     db_user = os.getenv("DB_USERNAME")
     db_pass = os.getenv("DB_PASSWORD")
@@ -34,9 +38,11 @@ def get_async_engine_and_session():
         f"postgresql+asyncpg://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
     )
 
-    engine = create_async_engine(database_url, echo=True, future=True)
-    session_maker = async_sessionmaker(bind=engine, expire_on_commit=False)
-    return engine, session_maker
+    _engine = create_async_engine(database_url, echo=True, future=True)
+    _session_maker = async_sessionmaker(bind=_engine, expire_on_commit=False)
+    return _engine, _session_maker
 
 
-engine, async_session_maker = get_async_engine_and_session()
+def init_async_engine_and_session():
+    global engine, async_session_maker
+    engine, async_session_maker = get_async_engine_and_session()
