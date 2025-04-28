@@ -102,11 +102,9 @@ async def search_paginated_places(
             )
         )
         stmt = stmt.order_by(
-            (
-                cast(Place.name.op("<->")(q), Float)
-                + cast(Place.name_zh.op("<->")(q), Float) * 1.5
-                + cast(Place.address.op("<->")(q), Float) * 2
-            )
+            cast(Place.name.op("<->")(q), Float)
+            + cast(Place.name_zh.op("<->")(q), Float) * 1.5
+            + cast(Place.address.op("<->")(q), Float) * 2
         )
     items, total = await paginate(db, stmt, page, page_size)
 

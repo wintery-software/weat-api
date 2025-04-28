@@ -5,7 +5,7 @@ class InvalidTagIdError(CustomError):
     """Exception raised for invalid tag IDs."""
 
     def __init__(self):
-        super().__init__(f"Invalid tag ID(s)")
+        super().__init__("Invalid tag ID(s)")
 
 
 class DBValidationError(CustomError):
