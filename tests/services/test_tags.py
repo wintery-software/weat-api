@@ -1,13 +1,14 @@
 import datetime
-import pytest
 from uuid import uuid4
 
+import pytest
 from sqlalchemy.exc import IntegrityError
 
+from app.models import Base
 from app.models.tags import Tag, TagType
-from app.schemas.tags import TagCreate, TagUpdate, TagResponse
-from app.services.tags import create_tag, list_tags, update_tag, delete_tag
-from app.services.errors import DBValidationError, DBObjectNotFoundError
+from app.schemas.tags import TagCreate, TagResponse, TagUpdate
+from app.services.errors import ObjectNotFoundError, ValidationError
+from app.services.tags import create_tag, delete_tag, list_tags, update_tag
 from tests.mocks.mock_uow import MockDBUoW
 
 
@@ -23,19 +24,19 @@ def mock_tag() -> Tag:
             name="Test Type",
             place_type="food",
         ),
-        created_at=datetime.datetime.now(datetime.timezone.utc),
-        updated_at=datetime.datetime.now(datetime.timezone.utc),
+        created_at=datetime.datetime.now(datetime.UTC),
+        updated_at=datetime.datetime.now(datetime.UTC),
     )
 
 
 @pytest.mark.asyncio
-async def test_create_tag_success():
+async def test_create_tag_success() -> None:
     db = MockDBUoW()
 
-    def fake_refresh(obj):
+    def fake_refresh(obj: Base) -> None:
         obj.id = uuid4()
-        obj.created_at = datetime.datetime.now(datetime.timezone.utc)
-        obj.updated_at = datetime.datetime.now(datetime.timezone.utc)
+        obj.created_at = datetime.datetime.now(datetime.UTC)
+        obj.updated_at = datetime.datetime.now(datetime.UTC)
         obj.tag_type = TagType(
             id=uuid4(),
             name="Test Type",
@@ -55,16 +56,16 @@ async def test_create_tag_success():
 
 
 @pytest.mark.asyncio
-async def test_create_tag_integrity_error():
+async def test_create_tag_integrity_error() -> None:
     db = MockDBUoW()
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
 
-    with pytest.raises(DBValidationError):
+    with pytest.raises(ValidationError):
         await create_tag(db, TagCreate(name="Cuisine", tag_type_id=uuid4()))
 
 
 @pytest.mark.asyncio
-async def test_list_tags_success(mock_tag):
+async def test_list_tags_success(mock_tag: Tag) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_tag]
 
@@ -75,12 +76,14 @@ async def test_list_tags_success(mock_tag):
 
 
 @pytest.mark.asyncio
-async def test_update_tag_success(mock_tag):
+async def test_update_tag_success(mock_tag: Tag) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_tag
 
     updated = await update_tag(
-        db, mock_tag.id, TagUpdate(name="Updated", tag_type_id=uuid4())
+        db,
+        mock_tag.id,
+        TagUpdate(name="Updated", tag_type_id=uuid4()),
     )
     assert isinstance(updated, TagResponse)
     assert updated.name == "Updated"
@@ -89,12 +92,12 @@ async def test_update_tag_success(mock_tag):
 
 
 @pytest.mark.asyncio
-async def test_update_tag_integrity_error(mock_tag):
+async def test_update_tag_integrity_error(mock_tag: Tag) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_tag
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
 
-    with pytest.raises(DBValidationError):
+    with pytest.raises(ValidationError):
         await update_tag(
             db,
             mock_tag.id,
@@ -103,7 +106,7 @@ async def test_update_tag_integrity_error(mock_tag):
 
 
 @pytest.mark.asyncio
-async def test_delete_tag_success(mock_tag):
+async def test_delete_tag_success(mock_tag: Tag) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_tag
 
@@ -113,9 +116,9 @@ async def test_delete_tag_success(mock_tag):
 
 
 @pytest.mark.asyncio
-async def test_tag_not_found():
+async def test_delete_tag_not_found() -> None:
     db = MockDBUoW()
-    db.get_by_id.side_effect = DBObjectNotFoundError(Tag, uuid4())
+    db.get_by_id.side_effect = ObjectNotFoundError(Tag, uuid4())
 
-    with pytest.raises(DBObjectNotFoundError):
+    with pytest.raises(ObjectNotFoundError):
         await delete_tag(db, uuid4())

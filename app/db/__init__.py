@@ -1,7 +1,7 @@
 import os
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
-from sqlalchemy.orm import declarative_base
 
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.orm import declarative_base
 
 DeclarativeBase = declarative_base()
 
@@ -10,7 +10,48 @@ engine = None
 async_session_maker = None
 
 
-def get_async_engine_and_session():
+class DBInitializationError(RuntimeError):
+    """Custom exception for database initialization errors.
+
+    This exception is raised when there are issues with the database initialization process,
+    such as missing environment variables or connection errors.
+
+    Args:
+        message (str): The error message to be displayed.
+
+    """
+
+    def __init__(self, missing_vars: list) -> None:
+        super().__init__(f"Missing required environment variables for asyncpg connection: {', '.join(missing_vars)}")
+
+
+class DBSessionMakerUninitializedError(RuntimeError):
+    """Custom exception for uninitialized database session.
+
+    This exception is raised when the database session is not initialized before use.
+
+    Args:
+        message (str): The error message to be displayed.
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__("Async session maker is not initialized. Call init_async_engine_and_session() first.")
+
+
+def get_async_engine_and_session() -> tuple:
+    """Get the async engine and session maker.
+
+    This function retrieves the database connection parameters from environment variables
+    and creates an async engine and session maker for the database connection.
+
+    Returns:
+        tuple: A tuple containing the async engine and session maker.
+
+    Raises:
+        DBInitializationError: If any required environment variables are missing.
+
+    """
     db_user = os.getenv("DB_USERNAME")
     db_pass = os.getenv("DB_PASSWORD")
     db_host = os.getenv("DB_HOST")
@@ -30,19 +71,36 @@ def get_async_engine_and_session():
     ]
 
     if missing_vars:
-        raise RuntimeError(
-            f"Missing required environment variables for asyncpg connection: {', '.join(missing_vars)}"
-        )
+        raise DBInitializationError(missing_vars)
 
-    database_url = (
-        f"postgresql+asyncpg://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
-    )
+    database_url = f"postgresql+asyncpg://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
-    _engine = create_async_engine(database_url, echo=True, future=True)
-    _session_maker = async_sessionmaker(bind=_engine, expire_on_commit=False)
-    return _engine, _session_maker
+    engine_ = create_async_engine(database_url, echo=True, future=True)
+    session_maker_ = async_sessionmaker(bind=engine_, expire_on_commit=False)
+    return engine_, session_maker_
 
 
-def init_async_engine_and_session():
+def init_async_engine_and_session() -> None:
+    """Initialize the async engine and session maker.
+
+    This function creates the async engine and session maker for the database connection.
+    It should be called once at the start of the application.
+    """
     global engine, async_session_maker
     engine, async_session_maker = get_async_engine_and_session()
+
+
+def get_async_session_maker() -> async_sessionmaker:
+    """Get the async session maker.
+
+    Returns:
+        async_sessionmaker: The async session maker for the database connection.
+
+    Raises:
+        DBSessionMakerUninitializedError: If the async session maker is not initialized.
+
+    """
+    if async_session_maker is None:
+        raise DBSessionMakerUninitializedError
+
+    return async_session_maker

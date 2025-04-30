@@ -2,7 +2,7 @@ from unittest.mock import AsyncMock
 
 
 class MockDBUoW:
-    def __init__(self):
+    def __init__(self) -> None:
         self.add = AsyncMock()
         self.commit = AsyncMock()
         self.refresh = AsyncMock()

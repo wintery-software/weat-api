@@ -1,0 +1,51 @@
+Metadata-Version: 2.4
+Name: weat-api
+Version: 0.1.0
+Author-email: Yulin Zhang <ui.zhang11@gmail.com>
+Requires-Python: >=3.13.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: alembic>=1.15.2
+Requires-Dist: asyncpg>=0.30.0
+Requires-Dist: fastapi>=0.115.12
+Requires-Dist: GeoAlchemy2>=0.17.1
+Requires-Dist: psycopg2-binary>=2.9.10
+Requires-Dist: pydantic>=2.11.3
+Requires-Dist: pytest>=8.3.5
+Requires-Dist: pytest-asyncio>=0.26.0
+Requires-Dist: python-dotenv>=1.1.0
+Requires-Dist: requests>=2.32.3
+Requires-Dist: shapely>=2.1.0
+Requires-Dist: SQLAlchemy>=2.0.40
+Requires-Dist: uvicorn>=0.34.0
+Provides-Extra: dev
+Requires-Dist: pre-commit>=4.2.0; extra == "dev"
+Dynamic: license-file
+
+# Weat API
+
+## Getting Started
+
+### Environment Variables
+
+Create a `.env` file with:
+
+```
+DB_USERNAME=
+DB_PASSWORD=
+DB_HOST=
+DB_PORT=
+DB_NAME=
+```
+
+### Running with Docker Compose
+
+Build and start:
+
+```bash
+docker-compose up --build -d
+```
+
+## License
+
+MIT

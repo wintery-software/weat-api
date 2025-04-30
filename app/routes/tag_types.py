@@ -1,26 +1,26 @@
-from typing import List
+from typing import Annotated
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
 
-from app.constants import Language, PlaceType
-from app.models.uow import DBUnitOfWork
-from app.routes.helpers import get_db, get_lang
-from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
 import app.services.tag_types as tag_types_service
+from app.constants import PlaceType
+from app.models.uow import DBUnitOfWork
+from app.routes.helpers import get_db
+from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
 
 router = APIRouter(tags=["Tag Types"])
 
 
 @router.post(
     "/tag-types/",
-    response_model=TagTypeResponse,
     status_code=status.HTTP_201_CREATED,
 )
 async def create_tag_type(
     tag_type_create: TagTypeCreate,
-    db: DBUnitOfWork = Depends(get_db),
-):
+    db: Annotated[DBUnitOfWork, Depends(get_db)],
+) -> TagTypeResponse:
+    """Create a new tag type."""
     return await tag_types_service.create_tag_type(
         db=db,
         tag_type_create=tag_type_create,
@@ -29,13 +29,12 @@ async def create_tag_type(
 
 @router.get(
     "/tag-types/{place_type}",
-    response_model=List[TagTypeResponse],
 )
 async def list_tag_types(
     place_type: PlaceType,
-    db: DBUnitOfWork = Depends(get_db),
-    lang: Language = Depends(get_lang),
-):
+    db: Annotated[DBUnitOfWork, Depends(get_db)],
+) -> list[TagTypeResponse]:
+    """List all tag types for a given place type."""
     return await tag_types_service.list_tag_types(
         db=db,
         place_type=place_type,
@@ -44,14 +43,14 @@ async def list_tag_types(
 
 @router.put(
     "/tag-types/{tag_type_id}",
-    response_model=TagTypeResponse,
     response_model_exclude_unset=True,
 )
 async def update_tag_type(
     tag_type_id: UUID,
     tag_type_update: TagTypeUpdate,
-    db: DBUnitOfWork = Depends(get_db),
-):
+    db: Annotated[DBUnitOfWork, Depends(get_db)],
+) -> TagTypeResponse:
+    """Update a tag type by ID."""
     return await tag_types_service.update_tag_type(
         db=db,
         tag_type_id=tag_type_id,
@@ -65,11 +64,10 @@ async def update_tag_type(
 )
 async def delete_tag_type(
     tag_type_id: UUID,
-    db: DBUnitOfWork = Depends(get_db),
-):
+    db: Annotated[DBUnitOfWork, Depends(get_db)],
+) -> None:
+    """Delete a tag type by ID."""
     await tag_types_service.delete_tag_type(
         db=db,
         tag_type_id=tag_type_id,
     )
-
-    return None

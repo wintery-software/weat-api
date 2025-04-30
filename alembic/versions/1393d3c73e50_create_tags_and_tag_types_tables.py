@@ -48,9 +48,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f("ix_tag_types_id"), "tag_types", ["id"], unique=False)
     op.create_index(op.f("ix_tag_types_name"), "tag_types", ["name"], unique=False)
-    op.create_index(
-        op.f("ix_tag_types_place_type"), "tag_types", ["place_type"], unique=False
-    )
+    op.create_index(op.f("ix_tag_types_place_type"), "tag_types", ["place_type"], unique=False)
     op.create_table(
         "tags",
         sa.Column("name", sa.String(), nullable=False),

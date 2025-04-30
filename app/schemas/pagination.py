@@ -1,11 +1,16 @@
-from typing import Generic, TypeVar
-from pydantic.generics import GenericModel
+from typing import TypeVar
 
+from pydantic.generics import GenericModel
 
 T = TypeVar("T")
 
 
-class PaginatedResponse(GenericModel, Generic[T]):
+class PaginatedResponse[T](GenericModel):
+    """Paginated response schema.
+
+    This schema is used for paginated responses in the API.
+    """
+
     items: list[T]
     total: int
     page: int

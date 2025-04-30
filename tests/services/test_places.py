@@ -2,25 +2,24 @@ import datetime
 from unittest.mock import MagicMock
 from uuid import uuid4
 
-from geoalchemy2 import WKTElement
 import pytest
+from geoalchemy2 import WKTElement
 from sqlalchemy.exc import IntegrityError
 
 from app.models.places import Place
 from app.models.tags import Tag, TagType
-from app.schemas.places import Location, PlaceCreate, PlaceUpdate, PlaceResponse
+from app.schemas.places import Location, LocationBounds, PlaceCreate, PlaceResponse, PlaceUpdate
+from app.services.errors import (
+    ObjectNotFoundError,
+    ValidationError,
+)
 from app.services.places import (
     create_place,
+    delete_place,
     get_place,
     list_paginated_places,
     search_paginated_places,
     update_place,
-    delete_place,
-)
-from app.services.errors import (
-    DBObjectNotFoundError,
-    DBValidationError,
-    InvalidTagIdError,
 )
 from tests.mocks.mock_uow import MockDBUoW
 
@@ -34,8 +33,8 @@ def mock_place() -> Place:
         location_geom=WKTElement("POINT(1.0 2.0)", srid=4326),
         opening_hours=[],
         properties={},
-        created_at=datetime.datetime.now(datetime.timezone.utc),
-        updated_at=datetime.datetime.now(datetime.timezone.utc),
+        created_at=datetime.datetime.now(datetime.UTC),
+        updated_at=datetime.datetime.now(datetime.UTC),
     )
 
 
@@ -56,7 +55,7 @@ def mock_tag() -> Tag:
 
 
 @pytest.mark.asyncio
-async def test_get_place(mock_place):
+async def test_get_place(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_place
 
@@ -68,19 +67,19 @@ async def test_get_place(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_get_place_not_found(mock_place):
+async def test_get_place_not_found() -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = None
-    with pytest.raises(DBObjectNotFoundError):
+    with pytest.raises(ObjectNotFoundError):
         await get_place(db, uuid4())
 
 
 @pytest.mark.asyncio
-async def test_create_place_success():
-    def fake_refresh_created(obj):
-        setattr(obj, "id", uuid4())
-        setattr(obj, "created_at", "2023-01-01T00:00:00Z")
-        setattr(obj, "updated_at", "2023-01-01T00:00:00Z")
+async def test_create_place_success() -> None:
+    def fake_refresh_created(obj: Place) -> None:
+        obj.id = uuid4()
+        obj.created_at = "2023-01-01T00:00:00Z"
+        obj.updated_at = "2023-01-01T00:00:00Z"
 
     db = MockDBUoW()
     db.get_all.return_value = []
@@ -99,11 +98,11 @@ async def test_create_place_success():
 
 
 @pytest.mark.asyncio
-async def test_create_place_with_valid_tags(mock_tag):
-    def fake_refresh_created(obj):
-        setattr(obj, "id", uuid4())
-        setattr(obj, "created_at", "2023-01-01T00:00:00Z")
-        setattr(obj, "updated_at", "2023-01-01T00:00:00Z")
+async def test_create_place_with_valid_tags(mock_tag: Tag) -> None:
+    def fake_refresh_created(obj: Place) -> None:
+        obj.id = uuid4()
+        obj.created_at = "2023-01-01T00:00:00Z"
+        obj.updated_at = "2023-01-01T00:00:00Z"
 
     db = MockDBUoW()
     db.get_all.return_value = [mock_tag]
@@ -123,7 +122,7 @@ async def test_create_place_with_valid_tags(mock_tag):
 
 
 @pytest.mark.asyncio
-async def test_create_place_with_invalid_tags(mock_tag):
+async def test_create_place_with_invalid_tags() -> None:
     db = MockDBUoW()
     db.get_all.return_value = []
 
@@ -134,12 +133,12 @@ async def test_create_place_with_invalid_tags(mock_tag):
         tag_ids=[uuid4()],  # Invalid tag ID
     )
 
-    with pytest.raises(InvalidTagIdError):
+    with pytest.raises(ValidationError):
         await create_place(db, data)
 
 
 @pytest.mark.asyncio
-async def test_create_place_integrity_error():
+async def test_create_place_integrity_error() -> None:
     db = MockDBUoW()
     db.get_all.return_value = []
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
@@ -160,12 +159,12 @@ async def test_create_place_integrity_error():
         tag_ids=[],
     )
 
-    with pytest.raises(DBValidationError):
+    with pytest.raises(ValidationError):
         await create_place(db, data)
 
 
 @pytest.mark.asyncio
-async def test_get_place_success(mock_place):
+async def test_get_place_success(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_place
     response = await get_place(db, uuid4())
@@ -173,7 +172,7 @@ async def test_get_place_success(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_update_place_success(mock_place):
+async def test_update_place_success(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_place
     db.get_all.return_value = []
@@ -186,7 +185,7 @@ async def test_update_place_success(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_update_place_integrity_error():
+async def test_update_place_integrity_error() -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = MagicMock()
     db.get_all.return_value = []
@@ -194,12 +193,12 @@ async def test_update_place_integrity_error():
 
     data = PlaceUpdate(name="Fail", tag_ids=[])
 
-    with pytest.raises(DBValidationError):
+    with pytest.raises(ValidationError):
         await update_place(db, uuid4(), data)
 
 
 @pytest.mark.asyncio
-async def test_delete_place(mock_place):
+async def test_delete_place(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_by_id.return_value = mock_place
 
@@ -209,7 +208,7 @@ async def test_delete_place(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_list_places(mock_place):
+async def test_list_places(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
 
@@ -224,7 +223,7 @@ async def test_list_places(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_list_places_with_valid_bounds(mock_place):
+async def test_list_places_with_valid_bounds(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
 
@@ -232,16 +231,18 @@ async def test_list_places_with_valid_bounds(mock_place):
     mock_count_result.scalar.return_value = 123
     db.execute.return_value = mock_count_result
 
-    sw_lat = 1
-    sw_lng = 2
-    ne_lat = 3
-    ne_lng = 4
+    sw_lat = 1.0
+    sw_lng = 2.0
+    ne_lat = 3.0
+    ne_lng = 4.0
     items, total = await list_paginated_places(
         db,
-        sw_lat=sw_lat,
-        sw_lng=sw_lng,
-        ne_lat=ne_lat,
-        ne_lng=ne_lng,
+        bounds=LocationBounds(
+            sw_lat=sw_lat,
+            sw_lng=sw_lng,
+            ne_lat=ne_lat,
+            ne_lng=ne_lng,
+        ),
         page=1,
         page_size=10,
     )
@@ -253,15 +254,12 @@ async def test_list_places_with_valid_bounds(mock_place):
     stmt_passed = db.get_all.call_args.args[0]
 
     compiled_sql = str(stmt_passed.compile(compile_kwargs={"literal_binds": True}))
-    assert (
-        f"places.location_geom && ST_MakeEnvelope({sw_lng}, {sw_lat}, {ne_lng}, {ne_lat}, 4326)"
-        in compiled_sql
-    )
+    assert f"places.location_geom && ST_MakeEnvelope({sw_lng}, {sw_lat}, {ne_lng}, {ne_lat}, 4326)" in compiled_sql
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
-    "sw_lat, sw_lng, ne_lat, ne_lng",
+    ("sw_lat", "sw_lng", "ne_lat", "ne_lng"),
     [
         (-91, 0, 0, 0),  # invalid sw_lat < -90
         (0, -181, 0, 0),  # invalid sw_lng < -180
@@ -272,8 +270,12 @@ async def test_list_places_with_valid_bounds(mock_place):
     ],
 )
 async def test_list_places_with_invalid_bounds(
-    mock_place, sw_lat, sw_lng, ne_lat, ne_lng
-):
+    mock_place: Place,
+    sw_lat: int,
+    sw_lng: int,
+    ne_lat: int,
+    ne_lng: int,
+) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
 
@@ -281,20 +283,22 @@ async def test_list_places_with_invalid_bounds(
     mock_count_result.scalar.return_value = 123
     db.execute.return_value = mock_count_result
 
-    with pytest.raises(ValueError):
+    with pytest.raises(ValidationError):
         await list_paginated_places(
             db,
-            sw_lat=sw_lat,
-            sw_lng=sw_lng,
-            ne_lat=ne_lat,
-            ne_lng=ne_lng,
+            bounds=LocationBounds(
+                sw_lat=sw_lat,
+                sw_lng=sw_lng,
+                ne_lat=ne_lat,
+                ne_lng=ne_lng,
+            ),
             page=1,
             page_size=10,
         )
 
 
 @pytest.mark.asyncio
-async def test_search_places(mock_place):
+async def test_search_places(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
 
@@ -319,7 +323,7 @@ async def test_search_places(mock_place):
 
 
 @pytest.mark.asyncio
-async def test_search_places_no_query(mock_place):
+async def test_search_places_no_query(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
 

@@ -37,9 +37,7 @@ def upgrade() -> None:
             nullable=True,
         ),
     )
-    op.execute(
-        "UPDATE places SET location_geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)"
-    )
+    op.execute("UPDATE places SET location_geom = ST_SetSRID(ST_MakePoint(longitude, latitude), 4326)")
     op.create_index(
         "idx_places_location_geom",
         "places",
@@ -73,13 +71,9 @@ def downgrade() -> None:
             nullable=True,
         ),
     )
-    op.execute(
-        "UPDATE places SET latitude = ST_Y(location_geom), longitude = ST_X(location_geom)"
-    )
+    op.execute("UPDATE places SET latitude = ST_Y(location_geom), longitude = ST_X(location_geom)")
 
-    op.drop_index(
-        "idx_places_location_geom", table_name="places", postgresql_using="gist"
-    )
+    op.drop_index("idx_places_location_geom", table_name="places", postgresql_using="gist")
     op.drop_column("places", "location_geom")
 
     op.execute("DROP EXTENSION IF EXISTS postgis")

@@ -1,24 +1,30 @@
-class CustomError(Exception): ...
+class CustomError(Exception):
+    """Base class for custom exceptions in the application."""
+
+    def __init__(self, message: str) -> None:
+        super().__init__(message)
+        self.message = message
+
+    def __str__(self) -> str:
+        """Return the string representation of the error message.
+
+        Returns:
+            str: The error message.
+
+        """
+        return self.message
 
 
-class InvalidTagIdError(CustomError):
-    """Exception raised for invalid tag IDs."""
+class ValidationError(CustomError):
+    """Exception raised for validation errors."""
 
-    def __init__(self):
-        super().__init__("Invalid tag ID(s)")
-
-
-class DBValidationError(CustomError):
-    """Exception raised for database validation errors."""
-
-    def __init__(self, db_error: Exception):
-        message = f"Database validation error: {str(db_error)}"
+    def __init__(self, message: str = "Validation error") -> None:
         super().__init__(message)
 
 
-class DBObjectNotFoundError(CustomError):
-    """Exception raised when a database object is not found."""
+class ObjectNotFoundError(CustomError):
+    """Exception raised when an object is not found."""
 
-    def __init__(self, object_type: str, object_id: str):
-        message = f"{object_type} with ID {object_id} not found"
+    def __init__(self, object_type: str, object_id: str) -> None:
+        message = f"Object not found: {object_type}(id={object_id})"
         super().__init__(message)
