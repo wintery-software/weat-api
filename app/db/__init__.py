@@ -10,35 +10,6 @@ engine = None
 async_session_maker = None
 
 
-class DBInitializationError(RuntimeError):
-    """Custom exception for database initialization errors.
-
-    This exception is raised when there are issues with the database initialization process,
-    such as missing environment variables or connection errors.
-
-    Args:
-        message (str): The error message to be displayed.
-
-    """
-
-    def __init__(self, missing_vars: list) -> None:
-        super().__init__(f"Missing required environment variables for asyncpg connection: {', '.join(missing_vars)}")
-
-
-class DBSessionMakerUninitializedError(RuntimeError):
-    """Custom exception for uninitialized database session.
-
-    This exception is raised when the database session is not initialized before use.
-
-    Args:
-        message (str): The error message to be displayed.
-
-    """
-
-    def __init__(self) -> None:
-        super().__init__("Async session maker is not initialized. Call init_async_engine_and_session() first.")
-
-
 def get_async_engine_and_session() -> tuple:
     """Get the async engine and session maker.
 
@@ -48,30 +19,12 @@ def get_async_engine_and_session() -> tuple:
     Returns:
         tuple: A tuple containing the async engine and session maker.
 
-    Raises:
-        DBInitializationError: If any required environment variables are missing.
-
     """
     db_username = settings.db_username
     db_pass = settings.db_password
     db_host = settings.db_host
     db_port = settings.db_port
     db_name = settings.db_name
-
-    missing_vars = [
-        var
-        for var, val in {
-            "DB_USERNAME": db_username,
-            "DB_PASSWORD": db_pass,
-            "DB_HOST": db_host,
-            "DB_PORT": db_port,
-            "DB_NAME": db_name,
-        }.items()
-        if not val
-    ]
-
-    if missing_vars:
-        raise DBInitializationError(missing_vars)
 
     database_url = f"postgresql+asyncpg://{db_username}:{db_pass}@{db_host}:{db_port}/{db_name}"
 
@@ -96,11 +49,5 @@ def get_async_session_maker() -> async_sessionmaker:
     Returns:
         async_sessionmaker: The async session maker for the database connection.
 
-    Raises:
-        DBSessionMakerUninitializedError: If the async session maker is not initialized.
-
     """
-    if async_session_maker is None:
-        raise DBSessionMakerUninitializedError
-
     return async_session_maker
