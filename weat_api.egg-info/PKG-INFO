@@ -11,6 +11,7 @@ Requires-Dist: fastapi>=0.115.12
 Requires-Dist: GeoAlchemy2>=0.17.1
 Requires-Dist: psycopg2-binary>=2.9.10
 Requires-Dist: pydantic>=2.11.3
+Requires-Dist: pydantic-settings>=2.9.1
 Requires-Dist: pytest>=8.3.5
 Requires-Dist: pytest-asyncio>=0.26.0
 Requires-Dist: python-dotenv>=1.1.0
