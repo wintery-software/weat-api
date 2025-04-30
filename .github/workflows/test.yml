@@ -5,10 +5,16 @@ on:
     branches:
       - master
 
+env:
+  DB_USERNAME: fake_db_username
+  DB_PASSWORD: fake_db_password
+  DB_HOST: fake_db_host
+  DB_PORT: fake_db_port
+  DB_NAME: fake_db_name
+
 jobs:
   test:
     runs-on: ubuntu-latest
-    environment: dev
 
     steps:
       - name: Checkout code
