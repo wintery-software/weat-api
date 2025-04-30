@@ -1,16 +1,13 @@
-from dotenv import load_dotenv
 import os
 import sys
-
 from logging.config import fileConfig
 
-from alembic import context
-from sqlalchemy import engine_from_config
-from sqlalchemy import pool
+from dotenv import load_dotenv
+from sqlalchemy import engine_from_config, pool
 
+from alembic import context
 from app.db import DeclarativeBase
 from app.models import *  # noqa: F403
-
 
 # Load environment variables
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/../")
@@ -47,7 +44,7 @@ missing_vars = [
 
 if missing_vars:
     raise RuntimeError(
-        f"Missing required environment variables for database connection: {', '.join(missing_vars)}"
+        f"Missing required environment variables for database connection: {', '.join(missing_vars)}",
     )
 
 sync_db_url = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"

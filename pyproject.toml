@@ -1,0 +1,66 @@
+[project]
+name = "weat-api"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.13.0"
+readme = "README.md"
+authors = [{ name = "Yulin Zhang", email = "ui.zhang11@gmail.com" }]
+dependencies = [
+  "alembic>=1.15.2",
+  "asyncpg>=0.30.0",
+  "fastapi>=0.115.12",
+  "GeoAlchemy2>=0.17.1",
+  "psycopg2-binary>=2.9.10",
+  "pydantic>=2.11.3",
+  "pytest>=8.3.5",
+  "pytest-asyncio>=0.26.0",
+  "python-dotenv>=1.1.0",
+  "requests>=2.32.3",
+  "shapely>=2.1.0",
+  "SQLAlchemy>=2.0.40",
+  "uvicorn>=0.34.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit>=4.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "app"}
+
+[tool.setuptools.packages.find]
+where = ["app"]
+
+[tool.black]
+line-length = 120
+target-version = ["py313"]
+skip-string-normalization = false
+extend-exclude = "alembic/"
+
+[tool.ruff]
+line-length = 120
+target-version = "py313"
+select = ["ALL"]
+ignore = ["B008", "CPY001", "D100", "D104", "D106", "D107", "EM101"]
+per-file-ignores = { "tests/**/*.py" = ["D101", "D102", "D103", "PLR2004", "S101"] }
+fix = true
+unsafe-fixes = false
+extend-exclude = ["alembic/"]
+
+[tool.ruff.lint]
+preview = true
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pyupgrade]
+py3-plus = true
+keep-runtime-typing = false

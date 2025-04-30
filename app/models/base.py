@@ -1,5 +1,5 @@
-import uuid
 import datetime
+import uuid
 
 from pydantic import BaseModel
 from sqlalchemy import DateTime, text
@@ -11,6 +11,14 @@ from app.db import DeclarativeBase
 
 
 class Base(DeclarativeBase):
+    """Base model for all database models.
+
+    This class provides common attributes and methods for all models, including
+    an ID, timestamps for creation and updates, and a method to update the model
+    instance with data from a Pydantic model.
+
+    """
+
     __abstract__ = True
 
     id: Mapped[uuid.UUID] = mapped_column(
@@ -30,9 +38,15 @@ class Base(DeclarativeBase):
         DateTime(timezone=True),
         nullable=False,
         server_default=func.now(),
-        onupdate=lambda: datetime.datetime.now(datetime.timezone.utc),
+        onupdate=lambda: datetime.datetime.now(datetime.UTC),
     )
 
-    def update(self, data: BaseModel):
+    def update(self, data: BaseModel) -> None:
+        """Update the model instance with the provided data.
+
+        Args:
+            data (BaseModel): The data to update the model with. Must be a Pydantic model.
+
+        """
         for key, value in data.model_dump(exclude_unset=True).items():
             setattr(self, key, value)

@@ -2,7 +2,6 @@ from sqlalchemy import UUID, Column, ForeignKey, Table
 
 from app.models.base import Base
 
-
 place_tag_association = Table(
     "places_tags",
     Base.metadata,
