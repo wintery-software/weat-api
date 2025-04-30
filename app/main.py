@@ -1,5 +1,5 @@
 import os
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from http import HTTPStatus
 
@@ -14,7 +14,7 @@ from app.services.errors import CustomError
 
 
 @asynccontextmanager
-def lifespan(_app: FastAPI) -> Generator[None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:  # noqa: RUF029
     """Lifespan context manager for FastAPI application.
 
     Args:
@@ -36,7 +36,7 @@ app.include_router(tag_types_router)
 
 
 @app.exception_handler(CustomError)
-def handle_custom_error(_request: Request, exc: Exception) -> None:
+def handle_custom_error(_request: Request, exc: CustomError) -> None:
     """Handle custom errors.
 
     Args:
@@ -49,7 +49,7 @@ def handle_custom_error(_request: Request, exc: Exception) -> None:
     """
     raise HTTPException(
         status_code=HTTPStatus.BAD_REQUEST,
-        detail=str(exc),
+        detail=exc.message,
     )
 
 

@@ -30,11 +30,9 @@ dev = [
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-package-dir = {"" = "app"}
-
 [tool.setuptools.packages.find]
-where = ["app"]
+include = ["app"]
+exclude = ["alembic"]
 
 [tool.black]
 line-length = 120
@@ -47,13 +45,16 @@ line-length = 120
 target-version = "py313"
 select = ["ALL"]
 ignore = ["B008", "CPY001", "D100", "D104", "D106", "D107", "EM101"]
-per-file-ignores = { "tests/**/*.py" = ["D101", "D102", "D103", "PLR2004", "S101"] }
 fix = true
 unsafe-fixes = false
 extend-exclude = ["alembic/"]
 
 [tool.ruff.lint]
 preview = true
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["D101", "D102", "D103", "PLR2004", "S101"]
+"app/routes/*.py" = ["DOC201", "PLR0913", "PLR0917"]
 
 [tool.ruff.format]
 quote-style = "double"

@@ -1,6 +1,0 @@
-db
-models
-routes
-schemas
-services
-utils

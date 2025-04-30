@@ -25,7 +25,6 @@ def upgrade() -> None:
 
     existing_tables = [
         "places",
-        "places_tags",
         "tag_types",
         "tags",
     ]

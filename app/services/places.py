@@ -160,6 +160,7 @@ async def create_place(db: DBUnitOfWork, place_create: PlaceCreate) -> PlaceResp
         PlaceResponse: The created place response.
 
     Raises:
+        DuplicateGoogleMapsPlaceIdError: If the Google Maps Place ID already exists.
         ValidationError: If there is a validation error.
 
     """
@@ -170,6 +171,9 @@ async def create_place(db: DBUnitOfWork, place_create: PlaceCreate) -> PlaceResp
     try:
         await db.commit()
     except IntegrityError as e:
+        if f"Key (google_maps_place_id)=({place.google_maps_place_id}) already exists" in str(e):
+            raise DuplicateGoogleMapsPlaceIdError(place.google_maps_place_id) from e
+
         raise ValidationError from e
 
     await db.refresh(place)
@@ -209,6 +213,7 @@ async def update_place(
         PlaceResponse: The updated place response.
 
     Raises:
+        DuplicateGoogleMapsPlaceIdError: If the Google Maps Place ID already exists.
         ValidationError: If there is a validation error.
 
     """
@@ -221,6 +226,9 @@ async def update_place(
     try:
         await db.commit()
     except IntegrityError as e:
+        if f"Key (google_maps_place_id)=({place.google_maps_place_id}) already exists" in str(e):
+            raise DuplicateGoogleMapsPlaceIdError(place.google_maps_place_id) from e
+
         raise ValidationError from e
 
     await db.refresh(place)
@@ -240,3 +248,10 @@ async def delete_place(db: DBUnitOfWork, place_id: UUID) -> None:
 
     await db.delete(place)
     await db.commit()
+
+
+class DuplicateGoogleMapsPlaceIdError(ValidationError):
+    """Custom error for duplicate Google Maps Place ID."""
+
+    def __init__(self, google_maps_place_id: UUID) -> None:
+        super().__init__(f"Duplicate Google Maps Place ID: {google_maps_place_id}")

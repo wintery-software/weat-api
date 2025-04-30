@@ -3,7 +3,7 @@ from collections.abc import AsyncIterator
 from fastapi import Header, Query
 
 from app.constants import Language
-from app.db import async_session_maker
+from app.db import get_async_session_maker
 from app.models.uow import DBUnitOfWork
 
 
@@ -14,6 +14,7 @@ async def get_db() -> AsyncIterator[DBUnitOfWork]:
         DBUnitOfWork: The database unit of work.
 
     """
+    async_session_maker = get_async_session_maker()
     async with DBUnitOfWork(async_session_maker) as uow:
         yield uow
 

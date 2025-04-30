@@ -20,16 +20,7 @@ async def create_tag(
     tag_create: TagCreate,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> TagResponse:
-    """Create a new tag.
-
-    Args:
-        tag_create (TagCreate): The tag data to create.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        TagResponse: The created tag.
-
-    """
+    """Create a new tag."""
     return await tags_service.create_tag(
         db=db,
         tag_create=tag_create,
@@ -43,16 +34,7 @@ async def list_tags(
     place_type: PlaceType,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> list[TagResponse]:
-    """List all tags for a given place type.
-
-    Args:
-        place_type (PlaceType): The place type to filter tags by.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        list[TagResponse]: A list of tags for the specified place type.
-
-    """
+    """List all tags for a given place type."""
     return await tags_service.list_tags(
         db=db,
         place_type=place_type,
@@ -68,17 +50,7 @@ async def update_tag(
     tag_update: TagUpdate,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> TagResponse:
-    """Update a tag by ID.
-
-    Args:
-        tag_id (UUID): The ID of the tag to update.
-        tag_update (TagUpdate): The updated tag data.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        TagResponse: The updated tag.
-
-    """
+    """Update a tag by ID."""
     return await tags_service.update_tag(
         db=db,
         tag_id=tag_id,
@@ -94,13 +66,7 @@ async def delete_tag(
     tag_id: UUID,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> None:
-    """Delete a tag by ID.
-
-    Args:
-        tag_id (UUID): The ID of the tag to delete.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    """
+    """Delete a tag by ID."""
     await tags_service.delete_tag(
         db=db,
         tag_id=tag_id,

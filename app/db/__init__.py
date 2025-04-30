@@ -10,7 +10,7 @@ engine = None
 async_session_maker = None
 
 
-class DBInitializationError(Exception):
+class DBInitializationError(RuntimeError):
     """Custom exception for database initialization errors.
 
     This exception is raised when there are issues with the database initialization process,
@@ -23,6 +23,20 @@ class DBInitializationError(Exception):
 
     def __init__(self, missing_vars: list) -> None:
         super().__init__(f"Missing required environment variables for asyncpg connection: {', '.join(missing_vars)}")
+
+
+class DBSessionMakerUninitializedError(RuntimeError):
+    """Custom exception for uninitialized database session.
+
+    This exception is raised when the database session is not initialized before use.
+
+    Args:
+        message (str): The error message to be displayed.
+
+    """
+
+    def __init__(self) -> None:
+        super().__init__("Async session maker is not initialized. Call init_async_engine_and_session() first.")
 
 
 def get_async_engine_and_session() -> tuple:
@@ -74,3 +88,19 @@ def init_async_engine_and_session() -> None:
     """
     global engine, async_session_maker
     engine, async_session_maker = get_async_engine_and_session()
+
+
+def get_async_session_maker() -> async_sessionmaker:
+    """Get the async session maker.
+
+    Returns:
+        async_sessionmaker: The async session maker for the database connection.
+
+    Raises:
+        DBSessionMakerUninitializedError: If the async session maker is not initialized.
+
+    """
+    if async_session_maker is None:
+        raise DBSessionMakerUninitializedError
+
+    return async_session_maker

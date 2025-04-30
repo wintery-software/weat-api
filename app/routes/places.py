@@ -21,7 +21,7 @@ router = APIRouter(tags=["Places"])
 @router.get(
     "/places/",
 )
-async def list_places(  # noqa: PLR0913, PLR0917
+async def list_places(
     db: Annotated[AsyncSession, Depends(get_db)],
     sw_lat: float = -90,
     sw_lng: float = -180,
@@ -30,21 +30,7 @@ async def list_places(  # noqa: PLR0913, PLR0917
     page: int = 1,
     page_size: int = 10,
 ) -> PaginatedResponse[SimplePlaceResponse]:
-    """List all places within the specified bounds.
-
-    Args:
-        db (AsyncSession): The database session.
-        sw_lat (float, optional): Southwest latitude. Defaults to -90.
-        sw_lng (float, optional): Southwest longitude. Defaults to -180.
-        ne_lat (float, optional): Northeast latitude. Defaults to 90.
-        ne_lng (float, optional): Northeast longitude. Defaults to 180.
-        page (int, optional): The page number for pagination. Defaults to 1.
-        page_size (int, optional): The number of items per page. Defaults to 10.
-
-    Returns:
-        PaginatedResponse[SimplePlaceResponse]: A paginated response containing the list of places.
-
-    """
+    """List all places within the specified bounds."""
     items, total = await places_service.list_paginated_places(
         db=db,
         bounds=LocationBounds(
@@ -72,18 +58,7 @@ async def search_places(
     page: int = 1,
     page_size: int = 10,
 ) -> PaginatedResponse[PlaceResponse]:
-    """Search for places by name or description.
-
-    Args:
-        q (str, optional): The search query. Defaults to None.
-        page (int, optional): The page number for pagination. Defaults to 1.
-        page_size (int, optional): The number of items per page. Defaults to 10.
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        PaginatedResponse[PlaceResponse]: A paginated response containing the list of places.
-
-    """
+    """Search for places by name or description."""
     items, total = await places_service.search_paginated_places(
         db=db,
         q=q,
@@ -107,16 +82,7 @@ async def create_place(
     place_create: PlaceCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> PlaceResponse:
-    """Create a new place.
-
-    Args:
-        place_create (PlaceCreate): The place data to create.
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        PlaceResponse: The created place.
-
-    """
+    """Create a new place."""
     return await places_service.create_place(
         db=db,
         place_create=place_create,
@@ -128,16 +94,7 @@ async def get_place(
     place_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> PlaceResponse:
-    """Get a place by ID.
-
-    Args:
-        place_id (UUID): The ID of the place to retrieve.
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        PlaceResponse: The retrieved place.
-
-    """
+    """Get a place by ID."""
     return await places_service.get_place(
         db=db,
         place_id=place_id,
@@ -153,17 +110,7 @@ async def update_place(
     place_update: PlaceUpdate,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> PlaceResponse:
-    """Update a place by ID.
-
-    Args:
-        place_id (UUID): The ID of the place to update.
-        place_update (PlaceUpdate): The updated place data.
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
-
-    Returns:
-        PlaceResponse: The updated place.
-
-    """
+    """Update a place by ID."""
     return await places_service.update_place(
         db=db,
         place_id=place_id,
@@ -179,13 +126,7 @@ async def delete_place(
     place_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
 ) -> None:
-    """Delete a place by ID.
-
-    Args:
-        place_id (UUID): The ID of the place to delete.
-        db (AsyncSession, optional): The database session. Defaults to Depends(get_db).
-
-    """
+    """Delete a place by ID."""
     await places_service.delete_place(
         db=db,
         place_id=place_id,

@@ -99,7 +99,8 @@ class DBUnitOfWork:
             list[T]: A list of results.
 
         """
-        return await self._session.execute(stmt)
+        result = await self._session.execute(stmt)
+        return result.unique().scalars().all()
 
     async def execute(self, stmt: Executable) -> None:
         """Execute a SQL statement.

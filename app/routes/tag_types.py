@@ -20,16 +20,7 @@ async def create_tag_type(
     tag_type_create: TagTypeCreate,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> TagTypeResponse:
-    """Create a new tag type.
-
-    Args:
-        tag_type_create (TagTypeCreate): The tag type data to create.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        TagTypeResponse: The created tag type.
-
-    """
+    """Create a new tag type."""
     return await tag_types_service.create_tag_type(
         db=db,
         tag_type_create=tag_type_create,
@@ -43,16 +34,7 @@ async def list_tag_types(
     place_type: PlaceType,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> list[TagTypeResponse]:
-    """List all tag types for a given place type.
-
-    Args:
-        place_type (PlaceType): The place type to filter tag types by.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        list[TagTypeResponse]: A list of tag types for the specified place type.
-
-    """
+    """List all tag types for a given place type."""
     return await tag_types_service.list_tag_types(
         db=db,
         place_type=place_type,
@@ -68,17 +50,7 @@ async def update_tag_type(
     tag_type_update: TagTypeUpdate,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> TagTypeResponse:
-    """Update a tag type by ID.
-
-    Args:
-        tag_type_id (UUID): The ID of the tag type to update.
-        tag_type_update (TagTypeUpdate): The updated tag type data.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    Returns:
-        TagTypeResponse: The updated tag type.
-
-    """
+    """Update a tag type by ID."""
     return await tag_types_service.update_tag_type(
         db=db,
         tag_type_id=tag_type_id,
@@ -94,13 +66,7 @@ async def delete_tag_type(
     tag_type_id: UUID,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
 ) -> None:
-    """Delete a tag type by ID.
-
-    Args:
-        tag_type_id (UUID): The ID of the tag type to delete.
-        db (DBUnitOfWork, optional): The database unit of work. Defaults to Depends(get_db).
-
-    """
+    """Delete a tag type by ID."""
     await tag_types_service.delete_tag_type(
         db=db,
         tag_type_id=tag_type_id,
