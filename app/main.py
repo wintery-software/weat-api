@@ -1,4 +1,3 @@
-import os
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from http import HTTPStatus
@@ -11,6 +10,7 @@ from app.routes.places import router as places_router
 from app.routes.tag_types import router as tag_types_router
 from app.routes.tags import router as tags_router
 from app.services.errors import CustomError
+from app.settings import settings
 
 
 @asynccontextmanager
@@ -53,11 +53,9 @@ def handle_custom_error(_request: Request, exc: CustomError) -> None:
     )
 
 
-origins = os.getenv("CORS_ALLOW_ORIGINS", "").split(",")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=settings.cors_allow_origins_list,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"],

@@ -4,6 +4,7 @@ pyproject.toml
 app/__init__.py
 app/constants.py
 app/main.py
+app/settings.py
 weat_api.egg-info/PKG-INFO
 weat_api.egg-info/SOURCES.txt
 weat_api.egg-info/dependency_links.txt
