@@ -80,9 +80,10 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict | None:
     public_key = jwk.construct(
         {
             "kty": key["kty"],
-            "n": base64url_decode(key["n"].encode("utf-8")),
-            "e": base64url_decode(key["e"].encode("utf-8")),
+            "n": key["n"],
+            "e": key["e"],
         },
+        algorithm="RS256",
     )
 
     try:
