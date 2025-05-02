@@ -6,25 +6,10 @@ from fastapi import APIRouter, Depends, status
 import app.services.tags as tags_service
 from app.constants import PlaceType
 from app.models.uow import DBUnitOfWork
-from app.routes.helpers import get_db
+from app.routes.helpers import get_admin_user, get_db
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
 
 router = APIRouter(tags=["Tags"])
-
-
-@router.post(
-    "/tags/",
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_tag(
-    tag_create: TagCreate,
-    db: Annotated[DBUnitOfWork, Depends(get_db)],
-) -> TagResponse:
-    """Create a new tag."""
-    return await tags_service.create_tag(
-        db=db,
-        tag_create=tag_create,
-    )
 
 
 @router.get(
@@ -41,6 +26,22 @@ async def list_tags(
     )
 
 
+@router.post(
+    "/tags/",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_tag(
+    tag_create: TagCreate,
+    db: Annotated[DBUnitOfWork, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
+) -> TagResponse:
+    """Create a new tag."""
+    return await tags_service.create_tag(
+        db=db,
+        tag_create=tag_create,
+    )
+
+
 @router.put(
     "/tags/{tag_id}",
     response_model_exclude_unset=True,
@@ -49,6 +50,7 @@ async def update_tag(
     tag_id: UUID,
     tag_update: TagUpdate,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> TagResponse:
     """Update a tag by ID."""
     return await tags_service.update_tag(
@@ -65,6 +67,7 @@ async def update_tag(
 async def delete_tag(
     tag_id: UUID,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> None:
     """Delete a tag by ID."""
     await tags_service.delete_tag(

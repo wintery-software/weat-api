@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.places as places_service
-from app.routes.helpers import get_db
+from app.routes.helpers import get_admin_user, get_db
 from app.schemas.pagination import PaginatedResponse
 from app.schemas.places import (
     LocationBounds,
@@ -74,21 +74,6 @@ async def search_places(
     )
 
 
-@router.post(
-    "/places/",
-    status_code=status.HTTP_201_CREATED,
-)
-async def create_place(
-    place_create: PlaceCreate,
-    db: Annotated[AsyncSession, Depends(get_db)],
-) -> PlaceResponse:
-    """Create a new place."""
-    return await places_service.create_place(
-        db=db,
-        place_create=place_create,
-    )
-
-
 @router.get("/places/{place_id}")
 async def get_place(
     place_id: UUID,
@@ -101,6 +86,22 @@ async def get_place(
     )
 
 
+@router.post(
+    "/places/",
+    status_code=status.HTTP_201_CREATED,
+)
+async def create_place(
+    place_create: PlaceCreate,
+    db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
+) -> PlaceResponse:
+    """Create a new place."""
+    return await places_service.create_place(
+        db=db,
+        place_create=place_create,
+    )
+
+
 @router.put(
     "/places/{place_id}",
     response_model_exclude_unset=True,
@@ -109,6 +110,7 @@ async def update_place(
     place_id: UUID,
     place_update: PlaceUpdate,
     db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> PlaceResponse:
     """Update a place by ID."""
     return await places_service.update_place(
@@ -125,6 +127,7 @@ async def update_place(
 async def delete_place(
     place_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
+    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> None:
     """Delete a place by ID."""
     await places_service.delete_place(

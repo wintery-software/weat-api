@@ -20,15 +20,7 @@ def get_async_engine_and_session() -> tuple:
         tuple: A tuple containing the async engine and session maker.
 
     """
-    db_username = settings.db_username
-    db_pass = settings.db_password
-    db_host = settings.db_host
-    db_port = settings.db_port
-    db_name = settings.db_name
-
-    database_url = f"postgresql+asyncpg://{db_username}:{db_pass}@{db_host}:{db_port}/{db_name}"
-
-    engine_ = create_async_engine(database_url, echo=True, future=True)
+    engine_ = create_async_engine(settings.db_url, echo=True, future=True)
     session_maker_ = async_sessionmaker(bind=engine_, expire_on_commit=False)
     return engine_, session_maker_
 
