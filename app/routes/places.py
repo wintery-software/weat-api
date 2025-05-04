@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.places as places_service
-from app.routes.helpers import get_admin_user, get_db
+from app.routes.helpers import get_db
 from app.schemas.pagination import PaginatedResponse
 from app.schemas.places import (
     LocationBounds,
@@ -15,11 +15,12 @@ from app.schemas.places import (
     SimplePlaceResponse,
 )
 
-router = APIRouter(tags=["Places"])
+router = APIRouter(prefix="/places", tags=["Places"])
+protected_router = APIRouter(prefix="/places")
 
 
 @router.get(
-    "/places/",
+    "/",
 )
 async def list_places(
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -51,7 +52,7 @@ async def list_places(
     )
 
 
-@router.get("/places/search")
+@router.get("/search")
 async def search_places(
     db: Annotated[AsyncSession, Depends(get_db)],
     q: str | None = None,
@@ -74,7 +75,7 @@ async def search_places(
     )
 
 
-@router.get("/places/{place_id}")
+@router.get("/{place_id}")
 async def get_place(
     place_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -86,14 +87,36 @@ async def get_place(
     )
 
 
-@router.post(
-    "/places/",
+@protected_router.get(
+    "/",
+)
+async def list_places_protected(
+    db: Annotated[AsyncSession, Depends(get_db)],
+    page: int = 1,
+    page_size: int = 10,
+) -> PaginatedResponse[PlaceResponse]:
+    """List all places."""
+    items, total = await places_service.list_paginated_places(
+        db=db,
+        page=page,
+        page_size=page_size,
+    )
+
+    return PaginatedResponse[PlaceResponse](
+        items=items,
+        total=total,
+        page=page,
+        page_size=page_size,
+    )
+
+
+@protected_router.post(
+    "/",
     status_code=status.HTTP_201_CREATED,
 )
 async def create_place(
     place_create: PlaceCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
-    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> PlaceResponse:
     """Create a new place."""
     return await places_service.create_place(
@@ -102,15 +125,14 @@ async def create_place(
     )
 
 
-@router.put(
-    "/places/{place_id}",
+@protected_router.put(
+    "/{place_id}",
     response_model_exclude_unset=True,
 )
 async def update_place(
     place_id: UUID,
     place_update: PlaceUpdate,
     db: Annotated[AsyncSession, Depends(get_db)],
-    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> PlaceResponse:
     """Update a place by ID."""
     return await places_service.update_place(
@@ -120,14 +142,13 @@ async def update_place(
     )
 
 
-@router.delete(
-    "/places/{place_id}",
+@protected_router.delete(
+    "/{place_id}",
     status_code=status.HTTP_204_NO_CONTENT,
 )
 async def delete_place(
     place_id: UUID,
     db: Annotated[AsyncSession, Depends(get_db)],
-    _admin: Annotated[dict, Depends(get_admin_user)],
 ) -> None:
     """Delete a place by ID."""
     await places_service.delete_place(
