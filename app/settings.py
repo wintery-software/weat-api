@@ -68,7 +68,7 @@ class Settings(BaseSettings):
         """
         return f"https://cognito-idp.{self.aws_region}.amazonaws.com/{self.aws_user_pool_id}"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="allow")
 
 
 settings = Settings()
