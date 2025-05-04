@@ -22,7 +22,7 @@ Build and start all services:
 docker-compose up --build -d
 ```
 
-Start only the app service (if other services like DB are already running):
+Restart only the app service (if other services like DB are already running):
 
 ```bash
 docker-compose up --build -d app
