@@ -3,16 +3,18 @@ from http import HTTPStatus
 
 import httpx
 from fastapi import Depends, Header, HTTPException, Query
-from fastapi.security import OAuth2PasswordBearer
+from fastapi.security import OAuth2AuthorizationCodeBearer
 from jose import JOSEError, jwk, jwt
-from jose.utils import base64url_decode
 
 from app.constants import Language
 from app.db import get_async_session_maker
 from app.models.uow import DBUnitOfWork
 from app.settings import settings
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2AuthorizationCodeBearer(
+    authorizationUrl=settings.aws_cognito_authorization_url,
+    tokenUrl=settings.aws_cognito_token_url,
+)
 
 
 async def get_db() -> AsyncIterator[DBUnitOfWork]:
@@ -68,7 +70,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict | None:
 
     """
     async with httpx.AsyncClient() as client:
-        resp = await client.get(settings.aws_jwks_url)
+        resp = await client.get(settings.aws_cognito_jwks_url)
         jwks = resp.json()["keys"]
 
     unverified_header = jwt.get_unverified_header(token)
@@ -91,8 +93,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict | None:
             token,
             key=public_key,
             algorithms=["RS256"],
-            audience=settings.aws_client_id,
-            issuer=settings.aws_issuer,
+            audience=settings.aws_cognito_client_id,
+            issuer=settings.aws_cognito_issuer,
         )
     except JOSEError as e:
         raise HTTPException(status_code=HTTPStatus.UNAUTHORIZED, detail="Invalid token header") from e
