@@ -23,8 +23,8 @@ async def paginate(
 
     """
     offset = (page - 1) * page_size
-    stmt = stmt.offset(offset).limit(page_size)
-    items = await db.get_all(stmt)
+    items_stmt = stmt.offset(offset).limit(page_size)
+    items = await db.get_all(items_stmt)
 
     count_stmt = select(func.count()).select_from(stmt.subquery())
     count_result = await db.execute(count_stmt)
