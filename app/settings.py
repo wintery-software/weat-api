@@ -1,4 +1,4 @@
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     This class is used to load and manage application settings from environment variables.
 
     """
+
+    app_name: str = "Weat API"
+    app_description: str = "This app is a backend API for Weat."
+    app_version: str = "1.0.0"
+    app_env: Literal["dev", "prod", "test"] = "dev"
 
     db_username: str
     db_password: str

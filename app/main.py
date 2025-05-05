@@ -30,7 +30,18 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None]:  # noqa: RUF029
     yield
 
 
-app = FastAPI(docs_url="/", lifespan=lifespan)
+is_prod = settings.app_env == "prod"
+
+
+app = FastAPI(
+    title=settings.app_name,
+    description=settings.app_description,
+    version=settings.app_version,
+    openapi_url=None if is_prod else "/openapi.json",
+    docs_url=None if is_prod else "/docs",
+    redoc_url=None if is_prod else "/redoc",
+    lifespan=lifespan,
+)
 app.include_router(admin_router)
 app.include_router(places_router)
 app.include_router(tags_router)
