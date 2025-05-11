@@ -5,12 +5,21 @@ from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app.constants import PlaceType
-from app.models.tags import Tag, TagType
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
+from app.models.tag import Tag, TagType
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
-from app.services.errors import ValidationError
+from app.services.errors import ObjectNotFoundError, ValidationError
 
 router = APIRouter(tags=["Tags"])
+
+
+async def _get_tag_by_id(db: DBUnitOfWork, tag_id: UUID) -> Tag:
+    tag = await db.get_by_id(Tag, tag_id)
+
+    if tag is None:
+        raise ObjectNotFoundError(Tag.__class__, tag_id)
+
+    return tag
 
 
 async def create_tag(
@@ -82,7 +91,7 @@ async def update_tag(
         ValidationError: If there is a validation error.
 
     """
-    tag = await db.get_by_id(Tag, tag_id)
+    tag = await _get_tag_by_id(db, tag_id)
 
     tag.update(tag_update)
 
@@ -101,7 +110,7 @@ async def delete_tag(
     tag_id: UUID,
 ) -> None:
     """Delete a tag by its ID."""
-    tag = await db.get_by_id(Tag, tag_id)
+    tag = await _get_tag_by_id(db, tag_id)
 
     await db.delete(tag)
     await db.commit()

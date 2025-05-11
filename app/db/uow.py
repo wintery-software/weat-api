@@ -74,7 +74,7 @@ class DBUnitOfWork:
         """
         stmt = select(model).where(model.id == model_id)
         result = await self._session.execute(stmt)
-        return result.unique().scalar_one_or_none()
+        return result.scalar_one_or_none()
 
     async def get_one_or_none(self, stmt: Executable) -> T | None:
         """Get one or none result from a SQL statement.
@@ -87,7 +87,7 @@ class DBUnitOfWork:
 
         """
         result = await self._session.execute(stmt)
-        return result.unique().scalar_one_or_none()
+        return result.scalar_one_or_none()
 
     async def get_all(self, stmt: Executable) -> list[T]:
         """Get all results from a SQL statement.
@@ -100,7 +100,7 @@ class DBUnitOfWork:
 
         """
         result = await self._session.execute(stmt)
-        return result.unique().scalars().all()
+        return result.scalars().all()
 
     async def execute(self, stmt: Executable) -> None:
         """Execute a SQL statement.

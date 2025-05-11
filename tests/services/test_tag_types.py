@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.models import Base
-from app.models.tags import TagType
+from app.models.tag import TagType
 from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
 from app.services.errors import ValidationError
 from app.services.tag_types import (

@@ -6,8 +6,8 @@ import pytest
 from geoalchemy2 import WKTElement
 from sqlalchemy.exc import IntegrityError
 
-from app.models.places import Place
-from app.models.tags import Tag, TagType
+from app.models.place import Place
+from app.models.tag import Tag, TagType
 from app.schemas.places import Location, LocationBounds, PlaceCreate, PlaceResponse, PlaceUpdate
 from app.services.errors import (
     ObjectNotFoundError,

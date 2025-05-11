@@ -1,7 +1,7 @@
 from sqlalchemy import func, select, text
 from sqlalchemy.sql import Executable
 
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
 
 
 async def paginate(

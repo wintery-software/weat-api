@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, status
 
 import app.services.tag_types as tag_types_service
 from app.constants import PlaceType
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
 from app.routes.helpers import get_db
 from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
 

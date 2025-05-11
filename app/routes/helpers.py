@@ -8,7 +8,7 @@ from jose import JOSEError, jwk, jwt
 
 from app.constants import Language
 from app.db import get_async_session_maker
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
 from app.settings import settings
 
 oauth2_scheme = OAuth2AuthorizationCodeBearer(

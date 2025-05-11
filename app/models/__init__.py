@@ -1,4 +1,5 @@
-from app.models.associations import *  # noqa: F403
-from app.models.base import *  # noqa: F403
-from app.models.places import *  # noqa: F403
-from app.models.tags import *  # noqa: F403
+from .associations import *  # noqa: F403
+from .base import *  # noqa: F403
+from .food import *  # noqa: F403
+from .place import *  # noqa: F403
+from .tag import *  # noqa: F403
