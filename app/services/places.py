@@ -4,9 +4,9 @@ from sqlalchemy import Float, cast, func, or_, select
 from sqlalchemy.exc import IntegrityError
 
 from app.constants import PLACE_SEARCH_SIMILARITY_THRESHOLD
-from app.models.places import Place
-from app.models.tags import Tag
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
+from app.models.place import Place
+from app.models.tag import Tag
 from app.schemas.places import LocationBounds, PlaceCreate, PlaceResponse, PlaceUpdate
 from app.services.common import paginate, with_similarity_threshold
 from app.services.errors import (

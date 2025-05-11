@@ -5,7 +5,7 @@ import pytest
 from sqlalchemy.exc import IntegrityError
 
 from app.models import Base
-from app.models.tags import Tag, TagType
+from app.models.tag import Tag, TagType
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
 from app.services.errors import ObjectNotFoundError, ValidationError
 from app.services.tags import create_tag, delete_tag, list_tags, update_tag
@@ -118,7 +118,7 @@ async def test_delete_tag_success(mock_tag: Tag) -> None:
 @pytest.mark.asyncio
 async def test_delete_tag_not_found() -> None:
     db = MockDBUoW()
-    db.get_by_id.side_effect = ObjectNotFoundError(Tag, uuid4())
+    db.get_by_id.return_value = None
 
     with pytest.raises(ObjectNotFoundError):
         await delete_tag(db, uuid4())

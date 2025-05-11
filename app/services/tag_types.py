@@ -3,10 +3,19 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
-from app.models.tags import TagType
-from app.models.uow import DBUnitOfWork
+from app.db.uow import DBUnitOfWork
+from app.models.tag import TagType
 from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
-from app.services.errors import ValidationError
+from app.services.errors import ObjectNotFoundError, ValidationError
+
+
+async def _get_tag_type_by_id(db: DBUnitOfWork, tag_type_id: UUID) -> TagType:
+    tag_type = await db.get_by_id(TagType, tag_type_id)
+
+    if tag_type is None:
+        raise ObjectNotFoundError(TagType.__class__, tag_type_id)
+
+    return tag_type
 
 
 async def create_tag_type(
@@ -78,7 +87,7 @@ async def update_tag_type(
         ValidationError: If there is a validation error.
 
     """
-    tag_type = await db.get_by_id(TagType, tag_type_id)
+    tag_type = await _get_tag_type_by_id(db, tag_type_id)
 
     tag_type.update(tag_type_update)
 
@@ -97,7 +106,7 @@ async def delete_tag_type(
     tag_type_id: UUID,
 ) -> None:
     """Delete a tag type by its ID."""
-    tag_type = await db.get_by_id(TagType, tag_type_id)
+    tag_type = await _get_tag_type_by_id(db, tag_type_id)
 
     await db.delete(tag_type)
     await db.commit()

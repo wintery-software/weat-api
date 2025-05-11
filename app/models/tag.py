@@ -9,7 +9,7 @@ from app.models.associations import place_tag_association
 from app.models.base import Base
 
 if TYPE_CHECKING:
-    from app.models.places import Place
+    from app.models.place import Place
 
 
 class TagType(Base):
@@ -50,7 +50,7 @@ class Tag(Base):
         nullable=False,
     )
 
-    tag_type: Mapped["TagType"] = relationship(back_populates="tags", lazy="joined")
+    tag_type: Mapped["TagType"] = relationship(back_populates="tags", lazy="selectin")
     places: Mapped[list["Place"]] = relationship(
         secondary=place_tag_association,
         back_populates="tags",
