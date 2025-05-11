@@ -4,6 +4,7 @@ from http import HTTPStatus
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from app.db import init_async_engine_and_session
 from app.routes.admin import router as admin_router
@@ -65,6 +66,9 @@ def handle_custom_error(_request: Request, exc: CustomError) -> None:
         detail=exc.message,
     )
 
+
+# This must be the *first* middleware
+app.add_middleware(ProxyHeadersMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
