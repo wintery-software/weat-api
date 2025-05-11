@@ -11,7 +11,6 @@ from app.models.base import Base
 from app.schemas.places import PlaceUpdate
 
 if TYPE_CHECKING:
-    from app.models.food.dish import Dish
     from app.models.food.menu import Menu
     from app.models.tag import Tag
 
@@ -59,12 +58,6 @@ class Place(Base):
 
     # For Place.type = PlaceType.FOOD only
     menus: Mapped[list["Menu"]] = relationship(
-        back_populates="place",
-        cascade="all, delete-orphan",
-        passive_deletes=True,
-    )
-
-    dishes: Mapped[list["Dish"]] = relationship(
         back_populates="place",
         cascade="all, delete-orphan",
         passive_deletes=True,

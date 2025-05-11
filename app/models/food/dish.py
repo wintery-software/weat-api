@@ -9,7 +9,6 @@ from app.models.base import Base
 
 if TYPE_CHECKING:
     from app.models.food.menu import Menu
-    from app.models.place import Place
 
 
 class DishCategory(Base):
@@ -33,12 +32,12 @@ class Dish(Base):
     """Dish model.
 
     This model represents a dish in a menu.
-    It includes the place ID, category ID, dish name, price, and optional attributes.
+    It includes the menu ID, category ID, dish name, price, and optional attributes.
     """
 
     __tablename__ = "dishes"
 
-    place_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("places.id", ondelete="CASCADE"))
+    menu_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("menus.id", ondelete="CASCADE"))
     category_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("dish_categories.id", ondelete="SET NULL"),
         nullable=True,
@@ -49,5 +48,5 @@ class Dish(Base):
 
     properties: Mapped[dict] = mapped_column(JSON, default=dict, nullable=False)
 
-    place: Mapped["Place"] = relationship(back_populates="dishes")
+    menu: Mapped["Menu"] = relationship(back_populates="dishes")
     category: Mapped["DishCategory | None"] = relationship(back_populates="dishes", uselist=False)

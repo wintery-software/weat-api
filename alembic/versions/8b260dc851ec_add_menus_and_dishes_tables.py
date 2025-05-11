@@ -45,7 +45,7 @@ def upgrade() -> None:
     )
     op.create_table(
         "dishes",
-        sa.Column("place_id", sa.UUID(), nullable=False),
+        sa.Column("menu_id", sa.UUID(), nullable=False),
         sa.Column("category_id", sa.UUID(), nullable=False),
         sa.Column("name", sa.String(), nullable=False),
         sa.Column("name_zh", sa.String(), nullable=False),
@@ -55,7 +55,7 @@ def upgrade() -> None:
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.text("now()"), nullable=False),
         sa.ForeignKeyConstraint(["category_id"], ["dish_categories.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["place_id"], ["places.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["menu_id"], ["menus.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
     # ### end Alembic commands ###

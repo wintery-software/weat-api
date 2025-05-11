@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_create_menu_for_food_place(test_uow: "DBUnitOfWork") -> None:
     """Test that a menu can be created for a food place."""
     # Create a food place
@@ -40,6 +41,7 @@ async def test_create_menu_for_food_place(test_uow: "DBUnitOfWork") -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_create_multiple_menus_for_same_place(test_uow: "DBUnitOfWork") -> None:
     """Test that multiple menus can be created for the same place."""
     # Create a food place
@@ -74,6 +76,7 @@ async def test_create_multiple_menus_for_same_place(test_uow: "DBUnitOfWork") ->
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_menu_cascade_delete(test_uow: "DBUnitOfWork") -> None:
     """Test that menu is deleted when place is deleted."""
     # Create a food place

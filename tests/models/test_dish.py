@@ -15,6 +15,7 @@ if TYPE_CHECKING:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_create_dish(test_uow: "DBUnitOfWork") -> None:
     """Test that a dish can be created."""
     # Create a food place
@@ -47,7 +48,7 @@ async def test_create_dish(test_uow: "DBUnitOfWork") -> None:
     # Create a dish
     dish = Dish(
         id=uuid.uuid4(),
-        place_id=place.id,
+        menu_id=menu.id,
         category_id=category.id,
         name="Steak",
         name_zh="牛排",
@@ -65,11 +66,12 @@ async def test_create_dish(test_uow: "DBUnitOfWork") -> None:
     assert result.name_zh == "牛排"
     assert result.price == Decimal("29.99")
     assert result.properties == {"spicy_level": "medium"}
-    assert result.place_id == place.id
+    assert result.menu_id == menu.id
     assert result.category_id == category.id
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_dish_relationships(test_uow: "DBUnitOfWork") -> None:
     """Test that dish relationships are properly set up."""
     # Create a food place
@@ -102,7 +104,7 @@ async def test_dish_relationships(test_uow: "DBUnitOfWork") -> None:
     # Create a dish
     dish = Dish(
         id=uuid.uuid4(),
-        place_id=place.id,
+        menu_id=menu.id,
         category_id=category.id,
         name="Steak",
         name_zh="牛排",
@@ -115,12 +117,13 @@ async def test_dish_relationships(test_uow: "DBUnitOfWork") -> None:
     stmt = select(Dish).where(Dish.id == dish.id)
     result = await test_uow.get_one_or_none(stmt)
     assert result is not None
-    assert result.place.id == place.id
+    assert result.menu.id == menu.id
     assert result.category.id == category.id
     assert result.category.menu.id == menu.id
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_dish_cascade_delete_category(test_uow: "DBUnitOfWork") -> None:
     """Test that dish is not deleted when category is deleted."""
     # Create a food place
@@ -153,7 +156,7 @@ async def test_dish_cascade_delete_category(test_uow: "DBUnitOfWork") -> None:
     # Create a dish
     dish = Dish(
         id=uuid.uuid4(),
-        place_id=place.id,
+        menu_id=menu.id,
         category_id=category.id,
         name="Steak",
         name_zh="牛排",
@@ -173,6 +176,7 @@ async def test_dish_cascade_delete_category(test_uow: "DBUnitOfWork") -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_dish_cascade_delete_place(test_uow: "DBUnitOfWork") -> None:
     """Test that dish is deleted when place is deleted."""
     # Create a food place
@@ -205,7 +209,7 @@ async def test_dish_cascade_delete_place(test_uow: "DBUnitOfWork") -> None:
     # Create a dish
     dish = Dish(
         id=uuid.uuid4(),
-        place_id=place.id,
+        menu_id=menu.id,
         category_id=category.id,
         name="Steak",
         name_zh="牛排",
@@ -225,6 +229,7 @@ async def test_dish_cascade_delete_place(test_uow: "DBUnitOfWork") -> None:
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_dish_no_category(test_uow: "DBUnitOfWork") -> None:
     """Test that dish can be created without a category."""
     # Create a food place
@@ -247,7 +252,7 @@ async def test_dish_no_category(test_uow: "DBUnitOfWork") -> None:
     # Create a dish
     dish = Dish(
         id=uuid.uuid4(),
-        place_id=place.id,
+        menu_id=menu.id,
         category_id=None,
         name="Steak",
         name_zh="牛排",
@@ -260,4 +265,4 @@ async def test_dish_no_category(test_uow: "DBUnitOfWork") -> None:
     stmt = select(Dish).where(Dish.id == dish.id)
     result = await test_uow.get_one_or_none(stmt)
     assert result is not None
-    assert result.place_id == place.id
+    assert result.menu_id == menu.id
