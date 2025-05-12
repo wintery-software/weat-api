@@ -6,7 +6,8 @@ from fastapi import APIRouter, Depends, status
 import app.services.tags as tags_service
 from app.constants import PlaceType
 from app.db.uow import DBUnitOfWork
-from app.routes.helpers import get_db
+from app.routes.depends import get_db, get_sort_options
+from app.schemas.options import SortOptions
 from app.schemas.tags import TagCreate, TagResponse, TagUpdate
 
 router = APIRouter(prefix="/tags", tags=["Tags"])
@@ -22,11 +23,13 @@ protected_router = APIRouter(prefix="/tags")
 async def list_tags(
     place_type: PlaceType,
     db: Annotated[DBUnitOfWork, Depends(get_db)],
+    sort_options: Annotated[SortOptions | None, Depends(get_sort_options)],
 ) -> list[TagResponse]:
     """List all tags for a given place type."""
     return await tags_service.list_tags(
         db=db,
         place_type=place_type,
+        sort_options=sort_options,
     )
 
 

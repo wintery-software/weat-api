@@ -5,7 +5,7 @@ from fastapi import HTTPException
 from jose import JOSEError
 from pytest_mock import MockerFixture
 
-from app.routes.helpers import get_admin_user, get_current_user
+from app.routes.depends import get_admin_user, get_current_user
 
 MOCK_KID = "test-kid"
 MOCK_PUBLIC_KEY = {"kty": "RSA", "kid": MOCK_KID, "use": "sig", "n": "abc123", "e": "AQAB"}

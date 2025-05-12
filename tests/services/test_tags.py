@@ -78,7 +78,7 @@ async def test_list_tags_success(mock_tag: Tag) -> None:
 @pytest.mark.asyncio
 async def test_update_tag_success(mock_tag: Tag) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag
+    db.get.return_value = mock_tag
 
     updated = await update_tag(
         db,
@@ -94,7 +94,7 @@ async def test_update_tag_success(mock_tag: Tag) -> None:
 @pytest.mark.asyncio
 async def test_update_tag_integrity_error(mock_tag: Tag) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag
+    db.get.return_value = mock_tag
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
 
     with pytest.raises(ValidationError):
@@ -108,7 +108,7 @@ async def test_update_tag_integrity_error(mock_tag: Tag) -> None:
 @pytest.mark.asyncio
 async def test_delete_tag_success(mock_tag: Tag) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag
+    db.get.return_value = mock_tag
 
     await delete_tag(db, mock_tag.id)
     db.delete.assert_awaited_with(mock_tag)
@@ -116,9 +116,8 @@ async def test_delete_tag_success(mock_tag: Tag) -> None:
 
 
 @pytest.mark.asyncio
-async def test_delete_tag_not_found() -> None:
-    db = MockDBUoW()
-    db.get_by_id.return_value = None
+async def test_delete_tag_not_found(mock_uow: MockDBUoW) -> None:
+    mock_uow.get.return_value = None
 
     with pytest.raises(ObjectNotFoundError):
-        await delete_tag(db, uuid4())
+        await delete_tag(mock_uow, uuid4())

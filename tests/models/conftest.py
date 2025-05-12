@@ -1,6 +1,6 @@
 import asyncio
 from collections.abc import AsyncGenerator, Generator
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import asyncpg
 import pytest
@@ -11,6 +11,9 @@ from alembic import command
 from alembic.config import Config
 from app.db.uow import DBUnitOfWork
 from app.settings import settings
+
+if TYPE_CHECKING:
+    from sqlalchemy.ext.asyncio import AsyncEngine
 
 
 def run_migrations(mode: Literal["upgrade", "downgrade"] = "upgrade") -> None:
@@ -50,7 +53,7 @@ def setup_test_db() -> Generator[None]:
 
 
 @pytest_asyncio.fixture(scope="session")
-async def test_engine() -> AsyncGenerator[create_async_engine]:
+async def test_engine() -> AsyncGenerator["AsyncEngine"]:
     """Create a test engine.
 
     Yields:
@@ -66,8 +69,8 @@ async def test_engine() -> AsyncGenerator[create_async_engine]:
 
 @pytest_asyncio.fixture
 async def test_async_sessionmaker(  # noqa: RUF029
-    test_engine: create_async_engine,
-) -> AsyncGenerator[async_sessionmaker]:
+    test_engine: "AsyncEngine",
+) -> AsyncGenerator:
     """Create a test session factory.
 
     Yields:
@@ -79,8 +82,8 @@ async def test_async_sessionmaker(  # noqa: RUF029
 
 
 @pytest_asyncio.fixture
-async def test_uow(test_async_sessionmaker: async_sessionmaker) -> AsyncGenerator[DBUnitOfWork]:
-    """Create a test unit of work.
+async def test_uow(test_async_sessionmaker) -> AsyncGenerator["DBUnitOfWork"]:  # noqa: ANN001
+    """Create a test database unit of work.
 
     Yields:
         DBUnitOfWork: a DBUnitOfWork instance.

@@ -60,14 +60,16 @@ async def test_create_dish(test_uow: "DBUnitOfWork") -> None:
 
     # Verify that the dish was created
     stmt = select(Dish).where(Dish.id == dish.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is not None
-    assert result.name == "Steak"
-    assert result.name_zh == "牛排"
-    assert result.price == Decimal("29.99")
-    assert result.properties == {"spicy_level": "medium"}
-    assert result.menu_id == menu.id
-    assert result.category_id == category.id
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is not None
+    assert obj.name == "Steak"
+    assert obj.name_zh == "牛排"
+    assert obj.price == Decimal("29.99")
+    assert obj.properties == {"spicy_level": "medium"}
+    assert obj.menu_id == menu.id
+    assert obj.category_id == category.id
 
 
 @pytest.mark.asyncio
@@ -115,11 +117,13 @@ async def test_dish_relationships(test_uow: "DBUnitOfWork") -> None:
 
     # Verify relationships
     stmt = select(Dish).where(Dish.id == dish.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is not None
-    assert result.menu.id == menu.id
-    assert result.category.id == category.id
-    assert result.category.menu.id == menu.id
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is not None
+    assert obj.menu.id == menu.id
+    assert obj.category.id == category.id
+    assert obj.category.menu.id == menu.id
 
 
 @pytest.mark.asyncio
@@ -171,8 +175,10 @@ async def test_dish_cascade_delete_category(test_uow: "DBUnitOfWork") -> None:
 
     # Verify that the dish is not deleted
     stmt = select(Dish).where(Dish.id == dish.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is not None
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is not None
 
 
 @pytest.mark.asyncio
@@ -224,8 +230,10 @@ async def test_dish_cascade_delete_place(test_uow: "DBUnitOfWork") -> None:
 
     # Verify that the dish was also deleted
     stmt = select(Dish).where(Dish.id == dish.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is None
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is None
 
 
 @pytest.mark.asyncio
@@ -263,6 +271,8 @@ async def test_dish_no_category(test_uow: "DBUnitOfWork") -> None:
 
     # Verify that the dish was created
     stmt = select(Dish).where(Dish.id == dish.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is not None
-    assert result.menu_id == menu.id
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is not None
+    assert obj.menu_id == menu.id

@@ -7,12 +7,36 @@ from app.constants import PLACE_SEARCH_SIMILARITY_THRESHOLD
 from app.db.uow import DBUnitOfWork
 from app.models.place import Place
 from app.models.tag import Tag
+from app.schemas.errors import InvalidSortColumnError
+from app.schemas.options import FilterOptions, PaginationOptions, SortOptions
 from app.schemas.places import LocationBounds, PlaceCreate, PlaceResponse, PlaceUpdate
-from app.services.common import paginate, with_similarity_threshold
+from app.services.common import paginate, sort, with_similarity_threshold
 from app.services.errors import (
     ObjectNotFoundError,
     ValidationError,
 )
+
+
+async def _get_place_by_id(db: DBUnitOfWork, place_id: UUID) -> Place:
+    """Get a place by its ID.
+
+    Args:
+        db (DBUnitOfWork): The database unit of work.
+        place_id (UUID): The ID of the place to retrieve.
+
+    Returns:
+        Place: The place.
+
+    Raises:
+        ObjectNotFoundError: If the place is not found.
+
+    """
+    place = await db.get(Place, place_id)
+
+    if not place:
+        raise ObjectNotFoundError(Place.__name__, place_id)
+
+    return place
 
 
 class InvalidTagIdError(ValidationError):
@@ -38,15 +62,6 @@ def _validate_tags(tags: list[Tag], tag_ids: list[UUID]) -> None:
         raise InvalidTagIdError(tag_ids)
 
 
-async def _get_place_by_id(db: DBUnitOfWork, place_id: UUID) -> Place:
-    place = await db.get_by_id(Place, place_id)
-
-    if place is None:
-        raise ObjectNotFoundError(Place.__class__, place_id)
-
-    return place
-
-
 async def _get_tags_by_ids(db: DBUnitOfWork, tag_ids: list[UUID]) -> list[Tag]:
     stmt = select(Tag).where(Tag.id.in_(tag_ids))
     return await db.get_all(stmt)
@@ -62,74 +77,51 @@ async def _assign_tags_to_place(
     place.tags = tags
 
 
-async def list_paginated_places(
+async def list_places(
     db: DBUnitOfWork,
     bounds: LocationBounds | None = None,
-    page: int = 1,
-    page_size: int = 10,
-) -> tuple[list[PlaceResponse], int]:
-    """List places within a specified bounding box.
+    sort_options: SortOptions | None = None,
+    filter_options: FilterOptions | None = None,
+    pagination_options: PaginationOptions | None = None,
+) -> tuple[list[PlaceResponse], int] | list[PlaceResponse]:
+    """List places with optional bounds filtering.
 
     Args:
         db (DBUnitOfWork): The database unit of work.
-        bounds (LocationBounds, optional): The bounding box for filtering places.
-        page (int, optional): The page number for pagination. Defaults to 1.
-        page_size (int, optional): The number of items per page. Defaults to 10.
+        bounds (LocationBounds): The bounds for filtering places.
+        sort_options (SortOptions, optional): The sort options. Defaults to None.
+        filter_options (FilterOptions): The filter options.
+        pagination_options (PaginationOptions): The pagination options.
 
     Returns:
         tuple[list[PlaceResponse], int]: A tuple containing a list of place responses
         and the total count of places.
 
+    Raises:
+        InvalidSortColumnError: If the sort column is invalid.
+
     """
-    if not bounds:
-        bounds = LocationBounds(
-            sw_lat=-90,
-            sw_lng=-180,
-            ne_lat=90,
-            ne_lng=180,
+    # Start with a base statement
+    stmt = select(Place).join(Place.tags, isouter=True)
+
+    # Add boundaries to the statement
+    if bounds:
+        await with_similarity_threshold(db, PLACE_SEARCH_SIMILARITY_THRESHOLD)
+        stmt = stmt.where(
+            Place.location_geom.op("&&")(
+                func.ST_MakeEnvelope(
+                    bounds.sw_lng,
+                    bounds.sw_lat,
+                    bounds.ne_lng,
+                    bounds.ne_lat,
+                    4326,
+                ),
+            ),
         )
 
-    stmt = select(Place).where(
-        Place.location_geom.op("&&")(
-            func.ST_MakeEnvelope(
-                bounds.sw_lng,
-                bounds.sw_lat,
-                bounds.ne_lng,
-                bounds.ne_lat,
-                4326,
-            ),
-        ),
-    )
-    items, total = await paginate(db, stmt, page, page_size)
-
-    items = [PlaceResponse.model_validate(item) if item else None for item in items]
-
-    return items, total
-
-
-async def search_paginated_places(
-    db: DBUnitOfWork,
-    q: str | None = None,
-    page: int = 1,
-    page_size: int = 10,
-) -> tuple[list[PlaceResponse], int]:
-    """Search for places based on a query string.
-
-    Args:
-        db (DBUnitOfWork): The database unit of work.
-        q (str, optional): The search query string. Defaults to None.
-        page (int, optional): The page number for pagination. Defaults to 1.
-        page_size (int, optional): The number of items per page. Defaults to 10.
-
-    Returns:
-        tuple[list[PlaceResponse], int]: A tuple containing a list of place responses
-        and the total count of places.
-
-    """
-    await with_similarity_threshold(db, PLACE_SEARCH_SIMILARITY_THRESHOLD)
-
-    stmt = select(Place).join(Place.tags, isouter=True)
-    if q:
+    # Add a filtering query to the statement
+    if filter_options:
+        q = filter_options.q
         stmt = stmt.where(
             or_(
                 Place.name.op("%")(q),
@@ -137,13 +129,28 @@ async def search_paginated_places(
                 Place.address.op("%")(q),
             ),
         )
-        stmt = stmt.order_by(
-            cast(Place.name.op("<->")(q), Float)
-            + cast(Place.name_zh.op("<->")(q), Float) * 1.5
-            + cast(Place.address.op("<->")(q), Float) * 2,
-        )
-    items, total = await paginate(db, stmt, page, page_size)
+        # Only apply text search ordering if no explicit sort is requested
+        if not sort_options:
+            stmt = stmt.order_by(
+                cast(Place.name.op("<->")(q), Float)
+                + cast(Place.name_zh.op("<->")(q), Float) * 1.5
+                + cast(Place.address.op("<->")(q), Float) * 2,
+            )
 
+    # Add a sorting query to the statement
+    if sort_options:
+        if not hasattr(Place, sort_options.sort_by):
+            raise InvalidSortColumnError(sort_options.sort_by)
+
+        stmt = sort(stmt, Place, sort_options.sort_by, sort_options.order)
+
+    # Add a pagination query to the statement
+    if pagination_options:
+        total = await db.get_count(stmt)
+        stmt = paginate(stmt, pagination_options.page, pagination_options.page_size)
+
+    # Execute the statement
+    items = await db.get_all(stmt)
     items = [PlaceResponse.model_validate(item) if item else None for item in items]
 
     return items, total

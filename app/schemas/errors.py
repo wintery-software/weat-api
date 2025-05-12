@@ -39,6 +39,13 @@ class InvalidPhoneNumberError(ValidationError):
         super().__init__(f"Invalid phone number: {phone_number}. Phone number must be 10 digits.")
 
 
+class InvalidSortColumnError(ValidationError):
+    """Custom exception for invalid sort column."""
+
+    def __init__(self, sort_column: str) -> None:
+        super().__init__(f"Invalid sort column: {sort_column}. Sort column must be a valid attribute of the entity.")
+
+
 class InvalidTimeFormatError(ValidationError):
     """Custom exception for invalid time format."""
 

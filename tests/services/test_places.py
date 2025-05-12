@@ -8,6 +8,7 @@ from sqlalchemy.exc import IntegrityError
 
 from app.models.place import Place
 from app.models.tag import Tag, TagType
+from app.schemas.options import FilterOptions, PaginationOptions
 from app.schemas.places import Location, LocationBounds, PlaceCreate, PlaceResponse, PlaceUpdate
 from app.services.errors import (
     ObjectNotFoundError,
@@ -17,8 +18,7 @@ from app.services.places import (
     create_place,
     delete_place,
     get_place,
-    list_paginated_places,
-    search_paginated_places,
+    list_places,
     update_place,
 )
 from tests.mocks.mock_uow import MockDBUoW
@@ -57,19 +57,19 @@ def mock_tag() -> Tag:
 @pytest.mark.asyncio
 async def test_get_place(mock_place: Place) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_place
+    db.get.return_value = mock_place
 
     place_id = mock_place.id
     response = await get_place(db, place_id)
     assert isinstance(response, PlaceResponse)
     assert isinstance(response.location, Location)
-    db.get_by_id.assert_awaited_with(Place, place_id)
+    db.get.assert_awaited_with(Place, place_id)
 
 
 @pytest.mark.asyncio
 async def test_get_place_not_found() -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = None
+    db.get.return_value = None
     with pytest.raises(ObjectNotFoundError):
         await get_place(db, uuid4())
 
@@ -166,7 +166,7 @@ async def test_create_place_integrity_error() -> None:
 @pytest.mark.asyncio
 async def test_get_place_success(mock_place: Place) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_place
+    db.get.return_value = mock_place
     response = await get_place(db, uuid4())
     assert isinstance(response, PlaceResponse)
 
@@ -174,7 +174,7 @@ async def test_get_place_success(mock_place: Place) -> None:
 @pytest.mark.asyncio
 async def test_update_place_success(mock_place: Place) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_place
+    db.get.return_value = mock_place
     db.get_all.return_value = []
 
     data = PlaceUpdate(name="Updated", tag_ids=[])
@@ -187,8 +187,9 @@ async def test_update_place_success(mock_place: Place) -> None:
 @pytest.mark.asyncio
 async def test_update_place_integrity_error() -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = MagicMock()
+    db.get.return_value = MagicMock()
     db.get_all.return_value = []
+
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
 
     data = PlaceUpdate(name="Fail", tag_ids=[])
@@ -200,7 +201,7 @@ async def test_update_place_integrity_error() -> None:
 @pytest.mark.asyncio
 async def test_delete_place(mock_place: Place) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_place
+    db.get.return_value = mock_place
 
     await delete_place(db, mock_place.id)
     db.delete.assert_awaited_with(mock_place)
@@ -211,12 +212,15 @@ async def test_delete_place(mock_place: Place) -> None:
 async def test_list_places(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
+    db.get_count.return_value = 123
 
-    mock_count_result = MagicMock()
-    mock_count_result.scalar.return_value = 123
-    db.execute.return_value = mock_count_result
-
-    items, total = await list_paginated_places(db, page=1, page_size=10)
+    items, total = await list_places(
+        db,
+        pagination_options=PaginationOptions(
+            page=1,
+            page_size=10,
+        ),
+    )
     assert len(items) == 1
     assert isinstance(items[0], PlaceResponse)
     assert total == 123
@@ -226,16 +230,13 @@ async def test_list_places(mock_place: Place) -> None:
 async def test_list_places_with_valid_bounds(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
-
-    mock_count_result = MagicMock()
-    mock_count_result.scalar.return_value = 123
-    db.execute.return_value = mock_count_result
+    db.get_count.return_value = 123
 
     sw_lat = 1.0
     sw_lng = 2.0
     ne_lat = 3.0
     ne_lng = 4.0
-    items, total = await list_paginated_places(
+    items, total = await list_places(
         db,
         bounds=LocationBounds(
             sw_lat=sw_lat,
@@ -243,8 +244,10 @@ async def test_list_places_with_valid_bounds(mock_place: Place) -> None:
             ne_lat=ne_lat,
             ne_lng=ne_lng,
         ),
-        page=1,
-        page_size=10,
+        pagination_options=PaginationOptions(
+            page=1,
+            page_size=10,
+        ),
     )
     assert len(items) == 1
     assert isinstance(items[0], PlaceResponse)
@@ -278,13 +281,10 @@ async def test_list_places_with_invalid_bounds(
 ) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
-
-    mock_count_result = MagicMock()
-    mock_count_result.scalar.return_value = 123
-    db.execute.return_value = mock_count_result
+    db.get_count.return_value = 123
 
     with pytest.raises(ValidationError):
-        await list_paginated_places(
+        await list_places(
             db,
             bounds=LocationBounds(
                 sw_lat=sw_lat,
@@ -292,8 +292,10 @@ async def test_list_places_with_invalid_bounds(
                 ne_lat=ne_lat,
                 ne_lng=ne_lng,
             ),
-            page=1,
-            page_size=10,
+            pagination_options=PaginationOptions(
+                page=1,
+                page_size=10,
+            ),
         )
 
 
@@ -301,13 +303,10 @@ async def test_list_places_with_invalid_bounds(
 async def test_search_places(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
-
-    mock_count_result = MagicMock()
-    mock_count_result.scalar.return_value = 123
-    db.execute.return_value = mock_count_result
+    db.get_count.return_value = 123
 
     q = "Test Query"
-    items, total = await search_paginated_places(db, q=q, page=1, page_size=10)
+    items, total = await list_places(db, filter_options=FilterOptions(q=q))
     assert len(items) == 1
     assert isinstance(items[0], PlaceResponse)
     assert total == 123
@@ -326,13 +325,10 @@ async def test_search_places(mock_place: Place) -> None:
 async def test_search_places_no_query(mock_place: Place) -> None:
     db = MockDBUoW()
     db.get_all.return_value = [mock_place]
-
-    mock_count_result = MagicMock()
-    mock_count_result.scalar.return_value = 123
-    db.execute.return_value = mock_count_result
+    db.get_count.return_value = 123
 
     q = None
-    items, total = await search_paginated_places(db, q=q, page=1, page_size=10)
+    items, total = await list_places(db, filter_options=FilterOptions(q=q))
     assert len(items) == 1
     assert isinstance(items[0], PlaceResponse)
     assert total == 123
