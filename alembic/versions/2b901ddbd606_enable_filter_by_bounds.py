@@ -76,4 +76,4 @@ def downgrade() -> None:
     op.drop_index("idx_places_location_geom", table_name="places", postgresql_using="gist")
     op.drop_column("places", "location_geom")
 
-    op.execute("DROP EXTENSION IF EXISTS postgis")
+    op.execute("DROP EXTENSION IF EXISTS postgis CASCADE")
