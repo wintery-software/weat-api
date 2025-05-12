@@ -83,7 +83,7 @@ async def list_places(
     sort_options: SortOptions | None = None,
     filter_options: FilterOptions | None = None,
     pagination_options: PaginationOptions | None = None,
-) -> tuple[list[PlaceResponse], int] | list[PlaceResponse]:
+) -> tuple[list[PlaceResponse], int]:
     """List places with optional bounds filtering.
 
     Args:
@@ -137,6 +137,9 @@ async def list_places(
                 + cast(Place.address.op("<->")(q), Float) * 2,
             )
 
+    # Get the total count after filtering
+    total = await db.get_count(stmt)
+
     # Add a sorting query to the statement
     if sort_options:
         if not hasattr(Place, sort_options.sort_by):
@@ -146,7 +149,6 @@ async def list_places(
 
     # Add a pagination query to the statement
     if pagination_options:
-        total = await db.get_count(stmt)
         stmt = paginate(stmt, pagination_options.page, pagination_options.page_size)
 
     # Execute the statement
