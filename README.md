@@ -36,6 +36,20 @@ To import production data into your local Dockerized database:
 docker exec -it weat-api-app ./scripts/seed_db.sh
 ```
 
+### Testing
+
+The project uses pytest for testing. To run all tests:
+```bash
+docker exec -it weat-api-app pytest
+```
+
+To run without integration tests:
+```bash
+docker exec -it weat-api-app pytest -m "not integration"
+```
+
+The tests are located in the `tests` directory and follow the same structure as the `app` directory. Each test file should be named `test_*.py` and test functions should be named `test_*`.
+
 ## License
 
 MIT
