@@ -13,6 +13,8 @@ services:
       - db
     networks:
       - backend
+    volumes:
+      - .:/app
 
   db:
     container_name: weat-db

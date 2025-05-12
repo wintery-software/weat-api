@@ -5,14 +5,14 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 import app.services.places as places_service
-from app.routes.helpers import get_db
+from app.routes.depends import get_db, get_filter_options, get_location_bounds, get_pagination_options, get_sort_options
+from app.schemas.options import FilterOptions, PaginationOptions, SortOptions
 from app.schemas.pagination import PaginatedResponse
 from app.schemas.places import (
     LocationBounds,
     PlaceCreate,
     PlaceResponse,
     PlaceUpdate,
-    SimplePlaceResponse,
 )
 
 router = APIRouter(prefix="/places", tags=["Places"])
@@ -22,57 +22,33 @@ protected_router = APIRouter(prefix="/places")
 @router.get(
     "/",
 )
+@protected_router.get(
+    "/",
+)
 async def list_places(
     db: Annotated[AsyncSession, Depends(get_db)],
-    sw_lat: float = -90,
-    sw_lng: float = -180,
-    ne_lat: float = 90,
-    ne_lng: float = 180,
-    page: int = 1,
-    page_size: int = 10,
-) -> PaginatedResponse[SimplePlaceResponse]:
+    location_bounds: Annotated[LocationBounds, Depends(get_location_bounds)],
+    sort_options: Annotated[SortOptions | None, Depends(get_sort_options)],
+    filter_options: Annotated[FilterOptions | None, Depends(get_filter_options)],
+    pagination_options: Annotated[PaginationOptions | None, Depends(get_pagination_options)],
+) -> list[PlaceResponse] | PaginatedResponse[PlaceResponse]:
     """List all places within the specified bounds."""
-    items, total = await places_service.list_paginated_places(
+    items, total = await places_service.list_places(
         db=db,
-        bounds=LocationBounds(
-            sw_lat=sw_lat,
-            sw_lng=sw_lng,
-            ne_lat=ne_lat,
-            ne_lng=ne_lng,
-        ),
-        page=page,
-        page_size=page_size,
+        bounds=location_bounds,
+        sort_options=sort_options,
+        filter_options=filter_options,
+        pagination_options=pagination_options,
     )
 
-    return PaginatedResponse[SimplePlaceResponse](
-        items=items,
-        total=total,
-        page=page,
-        page_size=page_size,
-    )
-
-
-@router.get("/search")
-async def search_places(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    q: str | None = None,
-    page: int = 1,
-    page_size: int = 10,
-) -> PaginatedResponse[PlaceResponse]:
-    """Search for places by name or description."""
-    items, total = await places_service.search_paginated_places(
-        db=db,
-        q=q,
-        page=page,
-        page_size=page_size,
-    )
-
-    return PaginatedResponse[PlaceResponse](
-        items=items,
-        total=total,
-        page=page,
-        page_size=page_size,
-    )
+    if pagination_options:
+        return PaginatedResponse[PlaceResponse](
+            items=items,
+            total=total,
+            page=pagination_options.page,
+            page_size=pagination_options.page_size,
+        )
+    return [PlaceResponse.model_validate(item) for item in items]
 
 
 @router.get("/{place_id}")
@@ -84,29 +60,6 @@ async def get_place(
     return await places_service.get_place(
         db=db,
         place_id=place_id,
-    )
-
-
-@protected_router.get(
-    "/",
-)
-async def list_places_protected(
-    db: Annotated[AsyncSession, Depends(get_db)],
-    page: int = 1,
-    page_size: int = 10,
-) -> PaginatedResponse[PlaceResponse]:
-    """List all places."""
-    items, total = await places_service.list_paginated_places(
-        db=db,
-        page=page,
-        page_size=page_size,
-    )
-
-    return PaginatedResponse[PlaceResponse](
-        items=items,
-        total=total,
-        page=page,
-        page_size=page_size,
     )
 
 

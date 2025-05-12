@@ -81,10 +81,10 @@ class LocationBounds(BaseModel):
     This schema is used to represent a geographical bounding box with southwest and northeast corners.
     """
 
-    sw_lat: float = Field(examples=[37.7749])
-    sw_lng: float = Field(examples=[-122.4194])
-    ne_lat: float = Field(examples=[37.7849])
-    ne_lng: float = Field(examples=[-122.4094])
+    sw_lat: float = Field(default=-90, examples=[37.7749])
+    sw_lng: float = Field(default=-180, examples=[-122.4194])
+    ne_lat: float = Field(default=90, examples=[37.7849])
+    ne_lng: float = Field(default=180, examples=[-122.4094])
 
     @field_validator("sw_lat", "ne_lat")
     @classmethod

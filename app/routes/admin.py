@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 
-from app.routes.helpers import get_admin_user
+from app.routes.depends import get_admin_user
 from app.routes.places import protected_router as places_router
 from app.routes.tag_types import protected_router as tag_types_router
 from app.routes.tags import protected_router as tags_router

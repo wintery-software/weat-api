@@ -34,10 +34,12 @@ async def test_create_menu_for_food_place(test_uow: "DBUnitOfWork") -> None:
     await test_uow.commit()
 
     # Verify that the menu was created
-    stmt = select(Menu).where(Menu.place_id == place.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is not None
-    assert result.place_id == place.id
+    stmt = select(Menu).where(Menu.id == menu.id)
+    result = await test_uow.execute(stmt)
+    obj = result.scalar_one_or_none()
+
+    assert obj is not None
+    assert obj.place_id == place.id
 
 
 @pytest.mark.asyncio
@@ -71,8 +73,8 @@ async def test_create_multiple_menus_for_same_place(test_uow: "DBUnitOfWork") ->
 
     # Verify that both menus exist
     stmt = select(Menu).where(Menu.place_id == place.id)
-    result = await test_uow.get_all(stmt)
-    assert len(result) == 2
+    result = await test_uow.execute(stmt)
+    assert len(result.scalars().all()) == 2
 
 
 @pytest.mark.asyncio
@@ -101,6 +103,6 @@ async def test_menu_cascade_delete(test_uow: "DBUnitOfWork") -> None:
     await test_uow.commit()
 
     # Verify that the menu was also deleted
-    stmt = select(Menu).where(Menu.place_id == place.id)
-    result = await test_uow.get_one_or_none(stmt)
-    assert result is None
+    stmt = select(Menu).where(Menu.id == menu.id)
+    result = await test_uow.execute(stmt)
+    assert result.scalar_one_or_none() is None

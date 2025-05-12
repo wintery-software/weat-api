@@ -81,7 +81,7 @@ async def test_list_tag_types() -> None:
 @pytest.mark.asyncio
 async def test_update_tag_type_success(mock_tag_type: TagType) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag_type
+    db.get.return_value = mock_tag_type
 
     result = await update_tag_type(db, mock_tag_type.id, TagTypeUpdate(name="Updated"))
 
@@ -94,7 +94,7 @@ async def test_update_tag_type_success(mock_tag_type: TagType) -> None:
 @pytest.mark.asyncio
 async def test_update_tag_type_integrity_error(mock_tag_type: TagType) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag_type
+    db.get.return_value = mock_tag_type
     db.commit.side_effect = IntegrityError("stmt", {}, Exception())
 
     with pytest.raises(ValidationError):
@@ -104,7 +104,7 @@ async def test_update_tag_type_integrity_error(mock_tag_type: TagType) -> None:
 @pytest.mark.asyncio
 async def test_delete_tag_type_success(mock_tag_type: TagType) -> None:
     db = MockDBUoW()
-    db.get_by_id.return_value = mock_tag_type
+    db.get.return_value = mock_tag_type
 
     await delete_tag_type(db, mock_tag_type.id)
 

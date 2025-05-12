@@ -1,8 +1,9 @@
 from collections.abc import Callable
 from types import TracebackType
 from typing import TypeVar
+from uuid import UUID
 
-from sqlalchemy import Executable, select
+from sqlalchemy import Executable, func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -61,47 +62,6 @@ class DBUnitOfWork:
         finally:
             await self._session.close()
 
-    async def get_by_id(self, model: T, model_id: int) -> T | None:
-        """Get an instance by its ID.
-
-        Args:
-            model: The SQLAlchemy model class.
-            model_id: The ID of the instance to retrieve.
-
-        Returns:
-            T | None: The instance if found, otherwise None.
-
-        """
-        stmt = select(model).where(model.id == model_id)
-        result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def get_one_or_none(self, stmt: Executable) -> T | None:
-        """Get one or none result from a SQL statement.
-
-        Args:
-            stmt (Executable): The SQL statement to execute
-
-        Returns:
-            T | None: The result or None if no result is found.
-
-        """
-        result = await self._session.execute(stmt)
-        return result.scalar_one_or_none()
-
-    async def get_all(self, stmt: Executable) -> list[T]:
-        """Get all results from a SQL statement.
-
-        Args:
-            stmt (Executable): The SQL statement to execute
-
-        Returns:
-            list[T]: A list of results.
-
-        """
-        result = await self._session.execute(stmt)
-        return result.scalars().all()
-
     async def execute(self, stmt: Executable) -> None:
         """Execute a SQL statement.
 
@@ -110,6 +70,46 @@ class DBUnitOfWork:
 
         """
         return await self._session.execute(stmt)
+
+    async def get(self, model: type[T], model_id: UUID) -> T | None:
+        """Get an instance from the database.
+
+        Args:
+            model (Type[T]): The model to get.
+            model_id (UUID): The ID of the instance to get.
+
+        Returns:
+            T | None: The instance if found, otherwise None.
+
+        """
+        return await self._session.get(model, model_id)
+
+    async def get_all(self, stmt: Executable) -> list[T]:
+        """Get all instances from the database.
+
+        Args:
+            stmt (Executable): The SQL statement to execute.
+
+        Returns:
+            list[T]: The list of instances.
+
+        """
+        results = await self._session.execute(stmt)
+        return results.scalars().all()
+
+    async def get_count(self, stmt: Executable) -> int:
+        """Get the count of instances from the database.
+
+        Args:
+            stmt (Executable): The SQL statement to execute.
+
+        Returns:
+            int: The count of instances.
+
+        """
+        count_stmt = select(func.count()).select_from(stmt.subquery())
+        count_result = await self._session.execute(count_stmt)
+        return count_result.scalar()
 
     async def add(self, instance: T) -> None:
         """Add an instance to the session.

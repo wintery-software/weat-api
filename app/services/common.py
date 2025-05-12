@@ -1,36 +1,46 @@
-from sqlalchemy import func, select, text
-from sqlalchemy.sql import Executable
+from typing import Literal
+
+from sqlalchemy import Select, asc, desc, func, text
 
 from app.db.uow import DBUnitOfWork
 
 
-async def paginate(
-    db: DBUnitOfWork,
-    stmt: Executable,
-    page: int,
-    page_size: int,
-) -> tuple:
-    """Paginate the results of a SQLAlchemy query.
+def sort(stmt: Select, entity: type, sort_by: str, order: Literal["asc", "desc"]) -> Select:
+    """Modify a query to sort the results.
 
     Args:
-        db (DBUnitOfWork): Database unit of work.
-        stmt: SQLAlchemy query statement.
-        page (int): The page number to retrieve.
+        stmt (Select): The query to sort.
+        entity (type): The entity to sort.
+        sort_by (str): The field to sort by.
+        order (Literal["asc", "desc"]): The order to sort by.
+
+    Returns:
+        Select: The modified query.
+
+    """
+    # Get the sort column from the entity
+    sort_column = getattr(entity, sort_by)
+
+    # Apply case-insensitive sort
+    return stmt.order_by(
+        desc(func.lower(sort_column)) if order == "desc" else asc(func.lower(sort_column)),
+    )
+
+
+def paginate(stmt: Select, page: int, page_size: int) -> Select:
+    """Modify a query to paginate the results.
+
+    Args:
+        stmt (Select): The query to paginate.
+        page (int): The page number.
         page_size (int): The number of items per page.
 
     Returns:
-        tuple: A tuple containing the paginated items and the total count of items.
+        Select: The modified query.
 
     """
     offset = (page - 1) * page_size
-    items_stmt = stmt.offset(offset).limit(page_size)
-    items = await db.get_all(items_stmt)
-
-    count_stmt = select(func.count()).select_from(stmt.subquery())
-    count_result = await db.execute(count_stmt)
-    total = count_result.scalar()
-
-    return items, total
+    return stmt.limit(page_size).offset(offset)
 
 
 async def with_similarity_threshold(db: DBUnitOfWork, threshold: float = 0.3) -> None:

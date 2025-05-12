@@ -5,15 +5,31 @@ from sqlalchemy.exc import IntegrityError
 
 from app.db.uow import DBUnitOfWork
 from app.models.tag import TagType
+from app.schemas.errors import InvalidSortColumnError
+from app.schemas.options import SortOptions
 from app.schemas.tag_types import TagTypeCreate, TagTypeResponse, TagTypeUpdate
+from app.services.common import sort
 from app.services.errors import ObjectNotFoundError, ValidationError
 
 
 async def _get_tag_type_by_id(db: DBUnitOfWork, tag_type_id: UUID) -> TagType:
-    tag_type = await db.get_by_id(TagType, tag_type_id)
+    """Get a tag type by its ID.
 
-    if tag_type is None:
-        raise ObjectNotFoundError(TagType.__class__, tag_type_id)
+    Args:
+        db (DBUnitOfWork): The database unit of work.
+        tag_type_id (UUID): The ID of the tag type to retrieve.
+
+    Returns:
+        TagType: The tag type.
+
+    Raises:
+        ObjectNotFoundError: If the tag type is not found.
+
+    """
+    tag_type = await db.get(TagType, tag_type_id)
+
+    if not tag_type:
+        raise ObjectNotFoundError(TagType.__name__, tag_type_id)
 
     return tag_type
 
@@ -51,21 +67,32 @@ async def create_tag_type(
 async def list_tag_types(
     db: DBUnitOfWork,
     place_type: str,
+    sort_options: SortOptions | None = None,
 ) -> list[TagTypeResponse]:
     """List all tag types for a given place type.
 
     Args:
         db (DBUnitOfWork): Database unit of work.
         place_type (str): Place type to filter tag types by.
+        sort_options (SortOptions | None): Sort options.
 
     Returns:
         list[TagTypeResponse]: List of tag type responses.
 
+    Raises:
+        InvalidSortColumnError: If the sort column is invalid.
+
     """
     stmt = select(TagType).where(TagType.place_type == place_type)
-    result = await db.get_all(stmt)
 
-    return [TagTypeResponse.model_validate(item) for item in result]
+    if sort_options:
+        if not hasattr(TagType, sort_options.sort_by):
+            raise InvalidSortColumnError(sort_options.sort_by)
+
+        stmt = sort(stmt, TagType, sort_options.sort_by, sort_options.order)
+
+    items = await db.get_all(stmt)
+    return [TagTypeResponse.model_validate(item) for item in items]
 
 
 async def update_tag_type(
